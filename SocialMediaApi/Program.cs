@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+//Added the newtonsoftjson to ignore the loop | circular reference
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
   options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
@@ -15,7 +16,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Adding the dependency injection 2
+// Adding the dependency injection 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddTransient<IPostRepository, PostRepository>();
 builder.Services.AddDbContext<SocialMediaYTContext>(options =>
