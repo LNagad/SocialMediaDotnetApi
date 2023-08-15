@@ -1,28 +1,18 @@
-using Microsoft.EntityFrameworkCore;
-using SocialMedia.Core.Interfaces;
-using SocialMedia.Infrastructure.Data;
-using SocialMedia.Infrastructure.Mappings;
-using SocialMedia.Infrastructure.Repositories;
+using SocialMedia.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-//Added the newtonsoftjson to ignore the loop | circular reference
-builder.Services.AddControllers().AddNewtonsoftJson(options =>
-{
-  options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-});
+builder.Services
+  .AddControllers()
+  .ConfigureApiBehaviorOptions(opt => opt.SuppressModelStateInvalidFilter = true );
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Adding the dependency injection 
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddTransient<IPostRepository, PostRepository>();
-builder.Services.AddDbContext<SocialMediaYTContext>(options =>
-{
-  options.UseSqlServer(builder.Configuration.GetConnectionString("LocalDB"));
-});
+// Adding the dependency injection layers
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 

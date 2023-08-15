@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Entities;
 using SocialMedia.Core.Interfaces;
@@ -13,10 +13,12 @@ namespace SocialMediaApi.Controllers
   {
     private readonly IPostRepository _postRepository;
     private readonly IMapper _mapper;
+    private readonly IValidator<PostDto> _validator;
 
-    public PostController(IPostRepository postRepository, IMapper mapper) { 
+    public PostController(IPostRepository postRepository, IMapper mapper, IValidator<PostDto> validator) { 
       _postRepository = postRepository;
       _mapper = mapper;
+      _validator = validator;
     }
 
     [HttpGet]
@@ -40,9 +42,17 @@ namespace SocialMediaApi.Controllers
     [HttpPost]
     public async Task<IActionResult> Post(PostDto post)
     {
+      var result = _validator.Validate(post);
+
+      if (!result.IsValid)
+      {
+        return BadRequest(Results.BadRequest(result.ToDictionary()));
+      }
+
       var postEntity = _mapper.Map<Post>(post);
       await _postRepository.InsertPost(postEntity);
-      return Ok();
+
+      return Ok( new { Message = "Added Sucessfully!" });
     }
 
   }
