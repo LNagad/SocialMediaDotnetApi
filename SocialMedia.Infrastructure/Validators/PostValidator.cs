@@ -16,6 +16,10 @@ namespace SocialMedia.Infrastructure.Validators
       RuleFor(post => post.Image)
         .NotNull()
         .WithMessage("Please ensure you have supplied an image.");
+
+      RuleFor(post => post.Date)
+        .NotNull()
+        .WithMessage("Please ensure you have supplied the date.");
     }
   }
 }

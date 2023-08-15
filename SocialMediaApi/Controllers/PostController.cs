@@ -42,16 +42,16 @@ namespace SocialMediaApi.Controllers
     [HttpPost]
     public async Task<IActionResult> Post(PostDto post)
     {
-      var result = _validator.Validate(post);
+      var result = await _validator.ValidateAsync(post);
 
       if (!result.IsValid)
       {
-        return BadRequest(Results.BadRequest(result.ToDictionary()));
+        return BadRequest(Results.ValidationProblem(result.ToDictionary()));
       }
 
       var postEntity = _mapper.Map<Post>(post);
       await _postRepository.InsertPost(postEntity);
-
+      
       return Ok( new { Message = "Added Sucessfully!" });
     }
 
