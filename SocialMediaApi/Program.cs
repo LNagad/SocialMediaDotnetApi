@@ -1,5 +1,5 @@
 using SocialMedia.Infrastructure;
-
+using SocialMedia.Core;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -12,6 +12,7 @@ builder.Services.AddSwaggerGen();
 
 // Adding the dependency injection layers
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddServicesLayer();
 
 var app = builder.Build();
 

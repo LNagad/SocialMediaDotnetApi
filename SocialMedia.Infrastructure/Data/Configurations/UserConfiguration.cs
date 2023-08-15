@@ -8,7 +8,7 @@ namespace SocialMedia.Infrastructure.Data.Configurations
   {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-      builder.ToTable("User");
+      builder.ToTable("Usuario");
 
       builder.HasKey(e => e.UserId);
 

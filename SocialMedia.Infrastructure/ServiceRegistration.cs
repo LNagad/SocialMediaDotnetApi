@@ -14,7 +14,10 @@ namespace SocialMedia.Infrastructure
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
       services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
       services.AddTransient<IPostRepository, PostRepository>();
+      services.AddTransient<IUserRepository, UserRepository>();
+
       services.AddDbContext<SocialMediaYTContext>(options =>
       {
         options.UseSqlServer(config.GetConnectionString("LocalDB"));

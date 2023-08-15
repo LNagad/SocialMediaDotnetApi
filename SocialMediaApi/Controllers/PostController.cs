@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Entities;
 using SocialMedia.Core.Interfaces;
@@ -13,12 +12,12 @@ namespace SocialMediaApi.Controllers
   [ApiController]
   public class PostController : ControllerBase
   {
-    private readonly IPostRepository _postRepository;
+    private readonly IPostService _postService;
     private readonly IMapper _mapper;
     private readonly IValidator<PostDto> _validator;
 
-    public PostController(IPostRepository postRepository, IMapper mapper, IValidator<PostDto> validator) { 
-      _postRepository = postRepository;
+    public PostController(IPostService postService, IMapper mapper, IValidator<PostDto> validator) { 
+      _postService = postService;
       _mapper = mapper;
       _validator = validator;
     }
@@ -26,7 +25,7 @@ namespace SocialMediaApi.Controllers
     [HttpGet]
     public async Task<IActionResult> GetPosts()
     {
-      var posts = await _postRepository.GetPosts();
+      var posts = await _postService.GetPosts();
 
       var postsDto = _mapper.Map<IEnumerable<PostDto>>(posts);
       var apiResponse = new ApiResponse<IEnumerable<PostDto>>(postsDto);
@@ -36,7 +35,7 @@ namespace SocialMediaApi.Controllers
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPost(int id)
     {
-      var post = await _postRepository.GetPost(id);
+      var post = await _postService.GetPost(id);
       var postDto = _mapper.Map<PostDto>(post);
       var apiResponse = new ApiResponse<PostDto>(postDto);
       return Ok(apiResponse);
@@ -54,7 +53,7 @@ namespace SocialMediaApi.Controllers
 
       var postEntity = _mapper.Map<Post>(postDto);
 
-      await _postRepository.InsertPost(postEntity);
+      await _postService.InsertPost(postEntity);
 
       postDto = _mapper.Map<PostDto>(postEntity);
 
@@ -76,7 +75,7 @@ namespace SocialMediaApi.Controllers
       var postEntity = _mapper.Map<Post>(postDto);
       postEntity.PostId = id;
 
-      bool response = await _postRepository.UpdatePost(postEntity);
+      bool response = await _postService.UpdatePost(postEntity);
 
       if (!response)
       {
@@ -90,7 +89,7 @@ namespace SocialMediaApi.Controllers
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-      bool response = await _postRepository.DeletePost(id);
+      bool response = await _postService.DeletePost(id);
 
       if (!response)
       {

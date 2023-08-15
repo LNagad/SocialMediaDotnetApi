@@ -20,6 +20,7 @@ namespace SocialMedia.Infrastructure.Validators
       RuleFor(post => post.Date)
         .NotNull()
         .WithMessage("Please ensure you have supplied the date.");
+
     }
   }
 }
