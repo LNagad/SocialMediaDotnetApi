@@ -10,6 +10,7 @@ namespace SocialMedia.Infrastructure.Mappings
     public AutomapperProfile()
     {
       CreateMap<Post, PostDto>()
+        .ForMember(dest => dest.PostId, opt => opt.MapFrom(src => src.Id))
         .ReverseMap();
         //.ForMember(dest => dest.User, opt => opt.Ignore())
         //.ForMember(dest => dest.Comments, opt => opt.Ignore());

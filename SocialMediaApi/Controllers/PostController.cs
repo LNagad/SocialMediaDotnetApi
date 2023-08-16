@@ -73,7 +73,7 @@ namespace SocialMediaApi.Controllers
       }
 
       var postEntity = _mapper.Map<Post>(postDto);
-      postEntity.PostId = id;
+      postEntity.Id = id;
 
       bool response = await _postService.UpdatePost(postEntity);
 

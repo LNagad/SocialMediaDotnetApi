@@ -2,9 +2,7 @@
 
 namespace SocialMedia.Core.Interfaces
 {
-  public interface IUserRepository
+  public interface IUserRepository: IGenericRepository<User>
   {
-    Task<User> GetUser(int id);
-    Task<IEnumerable<User>> GetUsers();
   }
 }

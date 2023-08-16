@@ -17,6 +17,8 @@ namespace SocialMedia.Infrastructure
 
       services.AddTransient<IPostRepository, PostRepository>();
       services.AddTransient<IUserRepository, UserRepository>();
+      services.AddTransient<IUnitOfWork, UnitOfWork>();
+      services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
       services.AddDbContext<SocialMediaYTContext>(options =>
       {
