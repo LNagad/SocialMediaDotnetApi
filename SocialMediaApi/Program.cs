@@ -1,6 +1,6 @@
 using SocialMedia.Core;
 using SocialMedia.Infrastructure;
-using SocialMedia.Infrastructure.Filters;
+using SocialMediaApi.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 

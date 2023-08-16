@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;
-using SocialMedia.Core.Entities;
 using SocialMedia.Core.Interfaces;
 using SocialMediaApi.Responses;
 

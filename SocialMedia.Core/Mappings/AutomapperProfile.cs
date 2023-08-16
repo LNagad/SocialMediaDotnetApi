@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
+using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;
-using SocialMedia.Core.Entities;
 
-namespace SocialMedia.Infrastructure.Mappings
+namespace SocialMedia.Core.Mappings
 {
   public class AutomapperProfile : Profile
   {

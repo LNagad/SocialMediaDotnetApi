@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using SocialMedia.Core.Exceptions;
 using System.Net;
 
-namespace SocialMedia.Infrastructure.Filters
+namespace SocialMediaApi.Filters
 {
   public class GlobalExceptionFilter : IExceptionFilter
   {

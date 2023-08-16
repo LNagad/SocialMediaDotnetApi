@@ -1,6 +1,8 @@
-﻿namespace SocialMedia.Core.Entities
+﻿using SocialMedia.Core.Domain.Common;
+
+namespace SocialMedia.Core.Domain.Entities
 {
-  public partial class Post : BaseEntity
+    public partial class Post : BaseEntity
   {
     public Post()
     {

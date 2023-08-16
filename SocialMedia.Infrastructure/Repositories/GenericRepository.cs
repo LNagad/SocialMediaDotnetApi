@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SocialMedia.Core.Entities;
+using SocialMedia.Core.Domain.Common;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Infrastructure.Data;
 

@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using SocialMedia.Core.DTOs;
 
-namespace SocialMedia.Infrastructure.Validators
+namespace SocialMedia.Core.Validators
 {
   public class PostValidator: AbstractValidator<PostDto>
   {

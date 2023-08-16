@@ -1,4 +1,4 @@
-﻿using SocialMedia.Core.Entities;
+﻿using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
 
