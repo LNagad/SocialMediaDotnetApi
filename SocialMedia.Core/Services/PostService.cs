@@ -1,6 +1,8 @@
-﻿using SocialMedia.Core.Domain.Entities;
+﻿using SocialMedia.Core.Aplication.QueryFilters;
+using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
+using System.Collections;
 
 namespace SocialMedia.Core.Services
 {
@@ -13,9 +15,69 @@ namespace SocialMedia.Core.Services
       _unitOfWork = unitOfWork;
     }
 
-    public IAsyncEnumerable<Post> GetPosts()
+    public IEnumerable<Post> GetPosts(PostQueryFilter filters)
     {
-      return _unitOfWork.PostRepository.GetAll();
+      //var watch = System.Diagnostics.Stopwatch.StartNew();
+      var posts = _unitOfWork.PostRepository.GetAll();
+
+      if (filters.UserId != null)
+      {
+        posts = posts.Where(x => x.UserId == filters.UserId);
+      }
+
+      if (filters.Date != null)
+      {
+        //datetime usa horay minutos, por lo que si se quiere filtrar por fecha, se debe usar ToShortDateString()
+        posts = posts.Where(x => x.Date.ToShortDateString() == filters.Date?.ToShortDateString());
+      }
+
+      if (filters.Description != null)
+      {
+        posts = posts.Where(x => x.Description.ToLower().Contains(filters.Description.ToLower()));
+      }
+
+      //watch.Stop();
+      //var elapsedMs = watch.ElapsedMilliseconds;
+
+      //Console.WriteLine($"Time elapsed: {elapsedMs} ms");
+
+      return posts;
+    }
+
+    public async Task<IEnumerable<Post>> GetPostsAsync(PostQueryFilter filters)
+    {
+      //var watch = System.Diagnostics.Stopwatch.StartNew();
+
+      var posts = _unitOfWork.PostRepository.GetAllAsync();
+
+      var filteredPosts = new List<Post>();
+
+      await foreach (var post in posts)
+      {
+        if (filters.UserId != null && post.UserId != filters.UserId)
+        {
+          continue;
+        }
+
+        if (filters.Date != null && post.Date.Date != filters.Date.Value.Date)
+        {
+          continue;
+        }
+
+        if (filters.Description != null && !post.Description.ToLower().Contains(filters.Description.ToLower()))
+        {
+          continue;
+        }
+
+        filteredPosts.Add(post);
+      }
+
+      //watch.Stop();
+      //var elapsedMs = watch.ElapsedMilliseconds;
+
+      //Console.WriteLine($"Time elapsed: {elapsedMs} ms");
+
+      return filteredPosts;
     }
 
     public async Task<Post> GetPost(int id)
@@ -72,5 +134,6 @@ namespace SocialMedia.Core.Services
       return true;
     }
 
+  
   }
 }

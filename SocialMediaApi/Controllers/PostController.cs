@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using SocialMedia.Core.Aplication.QueryFilters;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Interfaces;
 using SocialMediaApi.Responses;
+using System.Net;
 
 namespace SocialMediaApi.Controllers
 {
@@ -16,21 +18,32 @@ namespace SocialMediaApi.Controllers
     private readonly IMapper _mapper;
     private readonly IValidator<PostDto> _validator;
 
-    public PostController(IPostService postService, IMapper mapper, IValidator<PostDto> validator) { 
+    public PostController(IPostService postService, IMapper mapper, IValidator<PostDto> validator) {
       _postService = postService;
       _mapper = mapper;
       _validator = validator;
     }
 
     [HttpGet]
-    public IActionResult GetPosts()
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+    public IActionResult GetPostsByFilters([FromQuery] PostQueryFilter filters)
     {
-      var posts = _postService.GetPosts();
-
+      var posts = _postService.GetPosts(filters);
       var postsDto = _mapper.Map<IEnumerable<PostDto>>(posts);
       var apiResponse = new ApiResponse<IEnumerable<PostDto>>(postsDto);
       return Ok(apiResponse);
     }
+
+    //[HttpGet("async")]
+    //public async Task<IActionResult> GetPostsByFiltersAsync([FromQuery] PostQueryFilter filters)
+    //{
+    //  var posts = await _postService.GetPostsAsync(filters);
+
+    //  var postsDto = _mapper.Map<IEnumerable<PostDto>>(posts);
+    //  var apiResponse = new ApiResponse<IEnumerable<PostDto>>(postsDto);
+    //  return Ok(apiResponse);
+    //}
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPost(int id)

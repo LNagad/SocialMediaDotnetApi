@@ -5,7 +5,8 @@ namespace SocialMedia.Core.Interfaces
 {
   public interface IGenericRepository<Entity> where Entity : BaseEntity
   {
-    IAsyncEnumerable<Entity> GetAll();
+    IEnumerable<Entity> GetAll();
+    IAsyncEnumerable<Entity> GetAllAsync();
     Task<Entity> GetByIdAsync(int id);
     Task AddAsync(Entity entity);
     void Update(Entity entity);
