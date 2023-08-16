@@ -4,10 +4,10 @@ namespace SocialMedia.Core.Interfaces
 {
   public interface IGenericRepository<Entity> where Entity : BaseEntity
   {
-    Task<IEnumerable<Entity>> GetAllAsync();
+    IAsyncEnumerable<Entity> GetAll();
     Task<Entity> GetByIdAsync(int id);
     Task AddAsync(Entity entity);
-    Task<bool> UpdateAsync(Entity entity);
-    Task<bool> DeleteAsync(int id);
+    void Update(Entity entity);
+    Task DeleteAsync(int id);
   }
 }

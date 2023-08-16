@@ -11,10 +11,11 @@ namespace SocialMedia.Infrastructure.Mappings
     {
       CreateMap<Post, PostDto>()
         .ForMember(dest => dest.PostId, opt => opt.MapFrom(src => src.Id))
-        .ReverseMap();
+        .ReverseMap()
+        .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PostId));
         //.ForMember(dest => dest.User, opt => opt.Ignore())
         //.ForMember(dest => dest.Comments, opt => opt.Ignore());
-        
+
     }
   }
 }

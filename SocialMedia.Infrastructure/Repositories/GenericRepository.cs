@@ -9,7 +9,7 @@ namespace SocialMedia.Infrastructure.Repositories
   {
     
     private readonly SocialMediaYTContext _context;
-    private DbSet<Entity> _entities;
+    protected DbSet<Entity> _entities;
 
     public GenericRepository(SocialMediaYTContext context)
     {
@@ -17,9 +17,9 @@ namespace SocialMedia.Infrastructure.Repositories
       _entities = _context.Set<Entity>();
     }
 
-    public virtual async Task<IEnumerable<Entity>> GetAllAsync()
+    public virtual IAsyncEnumerable<Entity> GetAll()
     {
-      return await _entities.AsNoTracking().ToListAsync();
+      return _entities.AsAsyncEnumerable();
     }
 
     public virtual async Task<Entity> GetByIdAsync(int id)
@@ -30,24 +30,17 @@ namespace SocialMedia.Infrastructure.Repositories
     public virtual async Task AddAsync(Entity entity)
     {
       await _entities.AddAsync(entity);
-      await _context.SaveChangesAsync();
     }
 
-    public virtual async Task<bool> UpdateAsync(Entity entity)
+    public virtual void Update(Entity entity)
     {
       _entities.Update(entity);
-
-      int rows = await _context.SaveChangesAsync();
-      return rows > 0;
     }
 
-    public virtual async Task<bool> DeleteAsync(int id)
+    public virtual async Task DeleteAsync(int id)
     {
       var entity = await GetByIdAsync(id);
       _entities.Remove(entity);
-
-      int rows = await _context.SaveChangesAsync();
-      return rows > 0;
     }
 
   }

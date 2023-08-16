@@ -1,10 +1,12 @@
-using SocialMedia.Infrastructure;
 using SocialMedia.Core;
+using SocialMedia.Infrastructure;
+using SocialMedia.Infrastructure.Filters;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers( opt => opt.Filters.Add<GlobalExceptionFilter>() );
   //.ConfigureApiBehaviorOptions(opt => opt.SuppressModelStateInvalidFilter = true );
 
 builder.Services.AddEndpointsApiExplorer();
