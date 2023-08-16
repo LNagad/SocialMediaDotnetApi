@@ -1,8 +1,8 @@
-﻿using SocialMedia.Core.Aplication.QueryFilters;
+﻿using SocialMedia.Core.Aplication.CustomEntities;
+using SocialMedia.Core.Aplication.QueryFilters;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
-using System.Collections;
 
 namespace SocialMedia.Core.Services
 {
@@ -15,9 +15,8 @@ namespace SocialMedia.Core.Services
       _unitOfWork = unitOfWork;
     }
 
-    public IEnumerable<Post> GetPosts(PostQueryFilter filters)
+    public PagedList<Post> GetPosts(PostQueryFilter filters)
     {
-      //var watch = System.Diagnostics.Stopwatch.StartNew();
       var posts = _unitOfWork.PostRepository.GetAll();
 
       if (filters.UserId != null)
@@ -36,48 +35,9 @@ namespace SocialMedia.Core.Services
         posts = posts.Where(x => x.Description.ToLower().Contains(filters.Description.ToLower()));
       }
 
-      //watch.Stop();
-      //var elapsedMs = watch.ElapsedMilliseconds;
+      var pagedPosts = PagedList<Post>.Create(posts, filters.PageNumber, filters.PageSize);
 
-      //Console.WriteLine($"Time elapsed: {elapsedMs} ms");
-
-      return posts;
-    }
-
-    public async Task<IEnumerable<Post>> GetPostsAsync(PostQueryFilter filters)
-    {
-      //var watch = System.Diagnostics.Stopwatch.StartNew();
-
-      var posts = _unitOfWork.PostRepository.GetAllAsync();
-
-      var filteredPosts = new List<Post>();
-
-      await foreach (var post in posts)
-      {
-        if (filters.UserId != null && post.UserId != filters.UserId)
-        {
-          continue;
-        }
-
-        if (filters.Date != null && post.Date.Date != filters.Date.Value.Date)
-        {
-          continue;
-        }
-
-        if (filters.Description != null && !post.Description.ToLower().Contains(filters.Description.ToLower()))
-        {
-          continue;
-        }
-
-        filteredPosts.Add(post);
-      }
-
-      //watch.Stop();
-      //var elapsedMs = watch.ElapsedMilliseconds;
-
-      //Console.WriteLine($"Time elapsed: {elapsedMs} ms");
-
-      return filteredPosts;
+      return pagedPosts;
     }
 
     public async Task<Post> GetPost(int id)

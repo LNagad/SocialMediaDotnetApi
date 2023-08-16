@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using SocialMedia.Core.Aplication.CustomEntities;
 using SocialMedia.Core.Aplication.QueryFilters;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;
@@ -32,18 +34,20 @@ namespace SocialMediaApi.Controllers
       var posts = _postService.GetPosts(filters);
       var postsDto = _mapper.Map<IEnumerable<PostDto>>(posts);
       var apiResponse = new ApiResponse<IEnumerable<PostDto>>(postsDto);
+
+      var metadata = new
+      {
+        posts.TotalCount,
+        posts.PageSize,
+        posts.TotalPages,
+        posts.CurrentPage,
+        posts.HasNextPage,
+        posts.HasPreviousPage,
+      };
+
+      Response.Headers.Add( "X-Pagination", JsonConvert.SerializeObject(metadata) );
       return Ok(apiResponse);
     }
-
-    //[HttpGet("async")]
-    //public async Task<IActionResult> GetPostsByFiltersAsync([FromQuery] PostQueryFilter filters)
-    //{
-    //  var posts = await _postService.GetPostsAsync(filters);
-
-    //  var postsDto = _mapper.Map<IEnumerable<PostDto>>(posts);
-    //  var apiResponse = new ApiResponse<IEnumerable<PostDto>>(postsDto);
-    //  return Ok(apiResponse);
-    //}
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPost(int id)

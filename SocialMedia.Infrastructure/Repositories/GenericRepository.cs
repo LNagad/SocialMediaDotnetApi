@@ -22,15 +22,6 @@ namespace SocialMedia.Infrastructure.Repositories
       return _entities.AsNoTracking().AsEnumerable();
     }
 
-    // seems to be slower than GetAll
-    public async IAsyncEnumerable<Entity> GetAllAsync()
-    {
-      await foreach (var entity in _entities.AsAsyncEnumerable())
-      {
-        yield return entity;
-      }
-    }
-
     public virtual async Task<Entity> GetByIdAsync(int id)
     {
       return await _entities.FindAsync(id);
