@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SocialMedia.Core.Domain.Settings;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Infrastructure.Data;
 using SocialMedia.Infrastructure.Repositories;
@@ -9,8 +10,10 @@ namespace SocialMedia.Infrastructure
 {
   public static class ServiceRegistration
   {
-    public static void AddInfrastructure(this IServiceCollection services, IConfiguration config)
+    public static void AddInfrastructureLayer(this IServiceCollection services, IConfiguration config)
     {
+      services.Configure<PaginationSettings>(config.GetSection("Pagination"));
+
       services.AddTransient<IPostRepository, PostRepository>();
       services.AddTransient<IUserRepository, UserRepository>();
       services.AddTransient<IUnitOfWork, UnitOfWork>();

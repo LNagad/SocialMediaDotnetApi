@@ -8,7 +8,7 @@ namespace SocialMedia.Core
 {
   public static class ServiceRegistration
   {
-    public static void AddServicesLayer(this IServiceCollection services)
+    public static void AddApplicationLayer(this IServiceCollection services)
     {
    
       services.AddTransient<IPostService, PostService>();
