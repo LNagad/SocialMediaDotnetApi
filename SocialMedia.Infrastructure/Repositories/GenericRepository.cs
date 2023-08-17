@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SocialMedia.Core.Domain.Common;
+using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Infrastructure.Data;
 
@@ -40,6 +41,8 @@ namespace SocialMedia.Infrastructure.Repositories
     public virtual async Task DeleteAsync(int id)
     {
       var entity = await GetByIdAsync(id);
+
+      if (entity == null) throw new BusinessException("Something went wrong");
       _entities.Remove(entity);
     }
 

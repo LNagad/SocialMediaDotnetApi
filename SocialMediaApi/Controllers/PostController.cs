@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SocialMedia.Core.Aplication.CustomEntities;
@@ -13,6 +14,8 @@ using System.Net;
 
 namespace SocialMediaApi.Controllers
 {
+  [Authorize]
+  [Produces("application/json")]
   [Route("api/[controller]")]
   [ApiController]
   public class PostController : ControllerBase
@@ -22,7 +25,8 @@ namespace SocialMediaApi.Controllers
     private readonly IValidator<PostDto> _validator;
     private readonly IUriService _uriService;
 
-    public PostController(IPostService postService, IMapper mapper, IValidator<PostDto> validator, IUriService uriService)
+    public PostController(IPostService postService, IMapper mapper, 
+      IValidator<PostDto> validator, IUriService uriService)
     {
       _postService = postService;
       _mapper = mapper;
@@ -30,8 +34,13 @@ namespace SocialMediaApi.Controllers
       _uriService = uriService;
     }
 
+    /// <summary>
+    /// Retrieve all posts
+    /// </summary>
+    /// <param name="filters">Filters to apply</param>
+    /// <returns></returns>
     [HttpGet( Name = nameof(GetPosts) )]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<PostDto>>))]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     public IActionResult GetPosts([FromQuery] PostQueryFilter filters)
     {

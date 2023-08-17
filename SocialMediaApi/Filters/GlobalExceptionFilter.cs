@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using SocialMedia.Core.Exceptions;
 using System.Net;
@@ -10,6 +9,7 @@ namespace SocialMediaApi.Filters
   {
     public void OnException(ExceptionContext context)
     {
+
       if ( context.Exception.GetType() == typeof(BusinessException) )
       {
         var exception = (BusinessException)context.Exception;
@@ -19,6 +19,7 @@ namespace SocialMediaApi.Filters
           Title = "Bad Request",
           Detail = exception.Message
         };
+
 
         var json = new
         {
