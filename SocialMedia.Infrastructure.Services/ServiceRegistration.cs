@@ -9,6 +9,7 @@ namespace SocialMedia.Infrastructure
   {
     public static void AddServicesLayer(this IServiceCollection services)
     {
+      services.AddSingleton<IPasswordService, PasswordService>();
       services.AddSingleton<IUriService>(provider =>
       {
         //get the current HttpContext to build the absolute uri
