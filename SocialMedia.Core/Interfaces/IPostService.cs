@@ -1,15 +1,16 @@
 ﻿using SocialMedia.Core.Aplication.CustomEntities;
 using SocialMedia.Core.Aplication.QueryFilters;
 using SocialMedia.Core.Domain.Entities;
+using SocialMedia.Core.DTOs;
 
 namespace SocialMedia.Core.Interfaces
 {
-    public interface IPostService
+  public interface IPostService
     {
-    PagedList<Post> GetPosts(PostQueryFilter filters);
-    Task<Post> GetPost(int id);
-    Task InsertPost(Post post);
-    Task<bool> UpdatePost(Post post);
+    (PagedList<Post>, IEnumerable<PostDto>) GetPosts(PostQueryFilter filters);
+    Task<PostDto> GetPost(int id);
+    Task<PostDto> InsertPost(PostDto postDto);
+    Task<bool> UpdatePost(PostDto postDto, int id);
     Task<bool> DeletePost(int id);
   }
 }

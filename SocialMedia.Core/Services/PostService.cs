@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Options;
+﻿using AutoMapper;
+using Microsoft.Extensions.Options;
 using SocialMedia.Core.Aplication.CustomEntities;
 using SocialMedia.Core.Aplication.QueryFilters;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.Domain.Settings;
+using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
 
@@ -11,15 +13,17 @@ namespace SocialMedia.Core.Services
   public class PostService : IPostService
   {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
     private readonly PaginationSettings _paginationSettings;
 
-    public PostService(IUnitOfWork unitOfWork, IOptions<PaginationSettings> options)
+    public PostService(IUnitOfWork unitOfWork, IOptions<PaginationSettings> options, IMapper mapper)
     {
       _unitOfWork = unitOfWork;
       _paginationSettings = options.Value;
+      _mapper = mapper;
     }
 
-    public PagedList<Post> GetPosts(PostQueryFilter filters)
+    public (PagedList<Post>, IEnumerable<PostDto>) GetPosts(PostQueryFilter filters)
     {
       filters.PageNumber = filters.PageNumber == 0 ? _paginationSettings.DefaultPageNumber : filters.PageNumber;
       filters.PageSize = filters.PageSize == 0 ? _paginationSettings.DefaultPageSize : filters.PageSize;
@@ -43,17 +47,21 @@ namespace SocialMedia.Core.Services
       }
 
       var pagedPosts = PagedList<Post>.Create(posts, filters.PageNumber, filters.PageSize);
-
-      return pagedPosts;
+      var postsDto = _mapper.Map<IEnumerable<PostDto>>(pagedPosts);
+      return (pagedPosts, postsDto);
     }
 
-    public async Task<Post> GetPost(int id)
+    public async Task<PostDto> GetPost(int id)
     {
-      return await _unitOfWork.PostRepository.GetByIdAsync(id);
+      var post = await _unitOfWork.PostRepository.GetByIdAsync(id);
+      var postDto = _mapper.Map<PostDto>(post);
+      return postDto;
     }
 
-    public async Task InsertPost(Post post)
+    public async Task<PostDto> InsertPost(PostDto postDto)
     {
+      var post = _mapper.Map<Post>(postDto);
+
       var user = await _unitOfWork.UserRepository.GetByIdAsync(post.UserId);
 
       if (user == null)
@@ -81,11 +89,16 @@ namespace SocialMedia.Core.Services
 
       await _unitOfWork.PostRepository.AddAsync(post);
       await _unitOfWork.SaveChangesAsync();
+
+      postDto = _mapper.Map<PostDto>(post);
+      return postDto;
     }
 
-    public async Task<bool> UpdatePost(Post entity)
+    public async Task<bool> UpdatePost(PostDto postDto, int id)
     {
-      var existingPost = await _unitOfWork.PostRepository.GetByIdAsync(entity.Id);
+      var entity = _mapper.Map<Post>(postDto);
+      var existingPost = await _unitOfWork.PostRepository.GetByIdAsync(id);
+
       existingPost.Image = entity.Image;
       existingPost.Description = entity.Description;
 
@@ -104,7 +117,5 @@ namespace SocialMedia.Core.Services
 
       return true;
     }
-
-  
   }
 }
