@@ -85,7 +85,11 @@ namespace SocialMedia.Core.Services
 
     public async Task<bool> UpdatePost(Post entity)
     {
-      _unitOfWork.PostRepository.Update(entity);
+      var existingPost = await _unitOfWork.PostRepository.GetByIdAsync(entity.Id);
+      existingPost.Image = entity.Image;
+      existingPost.Description = entity.Description;
+
+      _unitOfWork.PostRepository.Update(existingPost);
 
       await _unitOfWork.SaveChangesAsync();
 

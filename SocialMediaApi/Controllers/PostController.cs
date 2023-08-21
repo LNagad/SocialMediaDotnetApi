@@ -98,7 +98,7 @@ namespace SocialMediaApi.Controllers
     }
 
 
-    [HttpPut]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Put(int id, PostDto postDto)
     {
       var result = await _validator.ValidateAsync(postDto);

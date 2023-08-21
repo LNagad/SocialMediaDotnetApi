@@ -11,7 +11,7 @@ namespace SocialMedia.Infrastructure
 {
   public static class ServiceRegistration
   {
-    public static void AddInfrastructureLayer(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddInfrastructureLayer(this IServiceCollection services, IConfiguration config)
     {
       services.Configure<PaginationSettings>(config.GetSection("PaginationOptions"));
       services.Configure<PasswordSettings>(config.GetSection("PasswordOptions"));
@@ -26,6 +26,8 @@ namespace SocialMedia.Infrastructure
       {
         options.UseSqlServer(config.GetConnectionString("LocalDB"));
       });
+
+      return services;
     }
   }
 }

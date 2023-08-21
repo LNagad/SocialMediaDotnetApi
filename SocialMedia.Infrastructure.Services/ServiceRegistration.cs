@@ -7,7 +7,7 @@ namespace SocialMedia.Infrastructure
 {
   public static class ServiceRegistration
   {
-    public static void AddServicesLayer(this IServiceCollection services)
+    public static IServiceCollection AddServicesLayer(this IServiceCollection services)
     {
       services.AddSingleton<IPasswordService, PasswordService>();
       services.AddSingleton<IUriService>(provider =>
@@ -20,6 +20,8 @@ namespace SocialMedia.Infrastructure
         //request.host.ToUriComponent() = localhost:5000 | dns
         return new UriService(absoluteUri);
       });
+
+      return services;
     }
   }
 }
