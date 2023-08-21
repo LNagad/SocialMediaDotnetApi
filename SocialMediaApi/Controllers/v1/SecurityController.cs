@@ -9,20 +9,20 @@ using SocialMedia.Core.Domain.Enums;
 using SocialMedia.Infrastructure.Services.Interfaces;
 using SocialMediaApi.Responses;
 
-namespace SocialMediaApi.Controllers
+namespace SocialMediaApi.Controllers.v1
 {
+
+  [ApiVersion("1.0")]
   [Authorize(Roles = nameof(RoleType.Admin))]
-  [Produces("application/json")]
-  [Route("api/[controller]")]
-  [ApiController]
-  public class SecurityController : ControllerBase
+  
+  public class SecurityController : BaseApiController
   {
     private readonly ISecurityService _securityService;
     private readonly IMapper _mapper;
     private readonly IValidator<SecurityDto> _validator;
     private readonly IPasswordService _passwordService;
 
-    public SecurityController(ISecurityService securityService, IMapper mapper, 
+    public SecurityController(ISecurityService securityService, IMapper mapper,
       IValidator<SecurityDto> validator, IPasswordService passwordService)
     {
       _securityService = securityService;

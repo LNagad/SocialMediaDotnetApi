@@ -1,7 +1,7 @@
 using SocialMedia.Core;
 using SocialMedia.Infrastructure;
+using SocialMediaApi.Extensions;
 using SocialMediaApi.Filters;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,45 +12,37 @@ builder.Services
   //ignore null
   .AddNewtonsoftJson(opt => opt.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore);
 
+builder.Services.AddEndpointsApiExplorer();
+
 // Adding the dependency injection layers
+builder.Services.AddHealthChecks();
 builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddInfrastructureLayer(builder.Configuration);
 builder.Services.AddApplicationLayer();
 builder.Services.AddServicesLayer();
 
-// Adding Swagger
-builder.Services.AddSwagger($"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+builder.Services.AddSwaggerExtension();
+builder.Services.AddApiVersioningExtension();
 
-// Ading JWT
 builder.Services.AddJWTAuthentication(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//  app.UseSwagger();
-//  app.UseSwaggerUI(options =>
-//  {
-//    options.SwaggerEndpoint("../swagger/v1/swagger.json", "Social Media API v1");
-//    options.RoutePrefix = "swagger";
-//  });
-//}
+app.UseSwaggerExtension();
 
-app.UseSwagger();
-app.UseSwaggerUI(options =>
-{
-  options.SwaggerEndpoint("../swagger/v1/swagger.json", "Social Media API v1");
-  options.RoutePrefix = "swagger";
-});
+app.UseExceptionHandler("/Error");
+app.UseHsts();
 
 app.UseHttpsRedirection();
 
-//app.UseRouting();
+app.UseRouting();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseHealthChecks("/health");
 
 app.MapControllers();
 

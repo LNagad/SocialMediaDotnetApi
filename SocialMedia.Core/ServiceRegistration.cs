@@ -51,21 +51,6 @@ namespace SocialMedia.Core
 
       return services;
     }
-
-    public static IServiceCollection AddSwagger(this IServiceCollection services, string xmlFileName)
-    {
-      services.AddEndpointsApiExplorer();
-      services.AddSwaggerGen(doc =>
-      {
-        doc.SwaggerDoc("v1", new() { Title = "Social Media API", Version = "v1" });
-
-        //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFileName);
-        doc.IncludeXmlComments(xmlPath);
-      });
-
-      return services;
-    }
   }
 }
 

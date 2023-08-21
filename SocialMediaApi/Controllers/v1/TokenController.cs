@@ -7,17 +7,18 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace SocialMediaApi.Controllers
+namespace SocialMediaApi.Controllers.v1
 {
-  [Route("api/[controller]")]
-  [ApiController]
-  public class TokenController : ControllerBase
+
+  [ApiVersion("1.0")]
+
+  public class TokenController : BaseApiController
   {
     private readonly IConfiguration _configuration;
     private readonly ISecurityService _securityService;
     private readonly IPasswordService _passwordService;
 
-    public TokenController(IConfiguration configuration, 
+    public TokenController(IConfiguration configuration,
       ISecurityService securityService, IPasswordService passwordService)
     {
       _configuration = configuration;

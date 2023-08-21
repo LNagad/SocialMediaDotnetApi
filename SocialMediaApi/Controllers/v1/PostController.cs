@@ -10,22 +10,21 @@ using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Infrastructure.Services.Interfaces;
 using SocialMediaApi.Responses;
-using System.Net;
 
-namespace SocialMediaApi.Controllers
+namespace SocialMediaApi.Controllers.v1
 {
+
+  [ApiVersion("1.0")]
   [Authorize]
-  [Produces("application/json")]
-  [Route("api/[controller]")]
-  [ApiController]
-  public class PostController : ControllerBase
+
+  public class PostController : BaseApiController
   {
     private readonly IPostService _postService;
     private readonly IMapper _mapper;
     private readonly IValidator<PostDto> _validator;
     private readonly IUriService _uriService;
 
-    public PostController(IPostService postService, IMapper mapper, 
+    public PostController(IPostService postService, IMapper mapper,
       IValidator<PostDto> validator, IUriService uriService)
     {
       _postService = postService;
@@ -34,14 +33,9 @@ namespace SocialMediaApi.Controllers
       _uriService = uriService;
     }
 
-    /// <summary>
-    /// Retrieve all posts
-    /// </summary>
-    /// <param name="filters">Filters to apply</param>
-    /// <returns></returns>
-    [HttpGet( Name = nameof(GetPosts) )]
-    [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<IEnumerable<PostDto>>))]
-    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+    [HttpGet(Name = nameof(GetPosts))]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<PostDto>>), StatusCodes.Status200OK ) ]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult GetPosts([FromQuery] PostQueryFilter filters)
     {
       var posts = _postService.GetPosts(filters);
@@ -55,7 +49,7 @@ namespace SocialMediaApi.Controllers
         TotalPages = posts.TotalPages,
         HasNextPage = posts.HasNextPage,
         HasPreviousPage = posts.HasPreviousPage,
-        NextPageUrl = _uriService.GetPostPaginationUrl(filters, Url.RouteUrl(nameof(GetPosts) )).ToString(),
+        NextPageUrl = _uriService.GetPostPaginationUrl(filters, Url.RouteUrl(nameof(GetPosts))).ToString(),
         PreviousPageUrl = _uriService.GetPostPaginationUrl(filters, Url.RouteUrl(nameof(GetPosts))).ToString()
       };
 
@@ -69,6 +63,8 @@ namespace SocialMediaApi.Controllers
     }
 
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<PostDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPost(int id)
     {
       var post = await _postService.GetPost(id);
@@ -78,6 +74,8 @@ namespace SocialMediaApi.Controllers
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(ApiResponse<PostDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post(PostDto postDto)
     {
       var result = await _validator.ValidateAsync(postDto);
@@ -99,6 +97,9 @@ namespace SocialMediaApi.Controllers
 
 
     [HttpPut("{id}")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Put(int id, PostDto postDto)
     {
       var result = await _validator.ValidateAsync(postDto);
@@ -118,11 +119,12 @@ namespace SocialMediaApi.Controllers
         return NotFound();
       }
 
-      var apiResponse = new ApiResponse<bool>(response);
-      return Ok(apiResponse);
+      return Ok(response);
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
     {
       bool response = await _postService.DeletePost(id);
@@ -132,8 +134,7 @@ namespace SocialMediaApi.Controllers
         return NotFound();
       }
 
-      var apiResponse = new ApiResponse<bool>(response);
-      return Ok(apiResponse);
+      return Ok(response);
     }
 
   }
