@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using SocialMedia.Core;
 using SocialMedia.Infrastructure;
+using SocialMedia.Infrastructure.Identity.Entities;
+using SocialMedia.Infrastructure.Identity.Seeds;
 using SocialMediaApi.Extensions;
 using SocialMediaApi.Filters;
 
@@ -18,9 +21,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddInfrastructureLayer(builder.Configuration);
 builder.Services.AddApplicationLayer();
-builder.Services.AddServicesLayer();
+builder.Services.AddPersistenceInfrastructure(builder.Configuration);
+builder.Services.AddIdentityInfrastructure(builder.Configuration);
+builder.Services.AddServicesInfrastructure();
 
 builder.Services.AddSwaggerExtension();
 builder.Services.AddApiVersioningExtension();
@@ -28,6 +32,28 @@ builder.Services.AddApiVersioningExtension();
 builder.Services.AddJWTAuthentication(builder.Configuration);
 
 var app = builder.Build();
+
+
+using (var scope = app.Services.CreateScope())
+{
+  var services = scope.ServiceProvider;
+
+  try
+  {
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    await DefaultRoles.SeedAsync(userManager, roleManager);
+    await DefaultAdminUser.SeedAsync(userManager, roleManager);
+    await DefaultBasicUser.SeedAsync(userManager, roleManager);
+  }
+  catch (Exception ex)
+  {
+    Console.WriteLine(ex.Message);
+  }
+}
+
+
 
 app.UseSwaggerExtension();
 
@@ -39,7 +65,6 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthentication();
-
 app.UseAuthorization();
 
 app.UseHealthChecks("/health");

@@ -21,10 +21,12 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.5.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\SocialMedia.Core\SocialMedia.Core.Aplication.csproj" />
+		<ProjectReference Include="..\SocialMedia.Infrastructure.Identity\SocialMedia.Infrastructure.Identity.csproj" />
 		<ProjectReference Include="..\SocialMedia.Infrastructure.Services\SocialMedia.Infrastructure.Services.csproj" />
 		<ProjectReference Include="..\SocialMedia.Infrastructure\SocialMedia.Infrastructure.Persistence.csproj" />
 	</ItemGroup>

@@ -7,6 +7,7 @@ using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Infrastructure.Services.Interfaces;
 using SocialMediaApi.Responses;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SocialMediaApi.Controllers.v1
 {
@@ -29,6 +30,7 @@ namespace SocialMediaApi.Controllers.v1
     }
 
     [HttpGet(Name = nameof(GetPosts))]
+    [SwaggerOperation(Summary = "Public: Get all posts")]
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<PostDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

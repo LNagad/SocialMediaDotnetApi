@@ -7,7 +7,7 @@ namespace SocialMedia.Infrastructure
 {
   public static class ServiceRegistration
   {
-    public static IServiceCollection AddServicesLayer(this IServiceCollection services)
+    public static IServiceCollection AddServicesInfrastructure(this IServiceCollection services)
     {
       services.AddSingleton<IPasswordService, PasswordService>();
       services.AddSingleton<IUriService>(provider =>

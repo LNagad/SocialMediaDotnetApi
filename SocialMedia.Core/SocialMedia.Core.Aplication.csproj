@@ -18,8 +18,4 @@
     <ProjectReference Include="..\SocialMedia.Core.Domain\SocialMedia.Core.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Enums\" />
-  </ItemGroup>
-
 </Project>
