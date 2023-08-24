@@ -1,26 +1,74 @@
-﻿using SocialMedia.Core.Aplication.Interfaces;
-using SocialMedia.Core.Domain.Entities;
+﻿using SocialMedia.Core.Aplication.DTOs.Account;
+using SocialMedia.Core.Aplication.Interfaces.Services;
+using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
+using SocialMedia.Core.Interfaces.Services;
 
 namespace SocialMedia.Core.Aplication.Services
 {
-    public class SecurityService : ISecurityService
+  public class SecurityService : ISecurityService
   {
     private readonly IUnitOfWork _unitOfWork;
-    public SecurityService(IUnitOfWork unitOfWork)
+    private readonly IAccountService _accountService;
+    public SecurityService(IUnitOfWork unitOfWork, IAccountService accountService)
     {
       _unitOfWork = unitOfWork;
+      _accountService = accountService;
     }
 
-    public async Task<Security> GetUser(UserLogin login)
+    public async Task<AuthenticationResponse> SignInWithEmailAndPasswordAsync(AuthenticationRequest login)
     {
-      return await _unitOfWork.SecurityRepository.GetUser(login);
+      var signInResult = await _accountService.SignInWithEmailAndPasswordAsync(login);
+
+      return signInResult;
     }
 
-    public async Task RegisterUser(Security security)
+    public async Task<RegisterResponse> RegisterUserAsync(RegisterRequest registerRequest, string origin)
     {
-      await _unitOfWork.SecurityRepository.AddAsync(security);
-      await _unitOfWork.SaveChangesAsync();
+      var registerResponse = await _accountService.RegisterBasicUserAsync(registerRequest, origin);
+      
+      if (registerResponse.HasError)
+      {
+        throw new BusinessException(registerResponse.Error);
+      }
+
+      return registerResponse;
+    }
+
+    public async Task<ConfirmAccountResponse> ConfirmEmailAsync(ConfirmAccountRequest req)
+    {
+      var result = await _accountService.ConfirmAccountAsync(req);
+
+      if (result.HasError)
+      {
+        throw new BusinessException(result.Error);
+      }
+
+      return result;
+    }
+
+    public async Task<ForgotPasswordResponese> ForgotPasswordAsync(ForgotPasswordRequest req, string origin)
+    {
+      var result = await _accountService.ForgotPasswordAsync(req, origin);
+
+      if (result.HasError)
+      {
+        throw new BusinessException(result.Error);
+      }
+
+      return result;
+    }
+
+    public async Task<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest req)
+    {
+      var result = await _accountService.ResetPasswordAsync(req);
+
+      if (result.HasError)
+      {
+        throw new BusinessException(result.Error);
+      }
+
+      return result;
     }
 
   }

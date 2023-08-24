@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Options;
 using SocialMedia.Core.Aplication.CustomEntities;
+using SocialMedia.Core.Aplication.Interfaces.Services;
 using SocialMedia.Core.Aplication.QueryFilters;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.Domain.Settings;
@@ -10,7 +11,7 @@ using SocialMedia.Core.Interfaces;
 
 namespace SocialMedia.Core.Services
 {
-  public class PostService : IPostService
+    public class PostService : IPostService
   {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;

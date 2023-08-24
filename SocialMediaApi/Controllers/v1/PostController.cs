@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SocialMedia.Core.Aplication.CustomEntities;
+using SocialMedia.Core.Aplication.Interfaces.Services;
 using SocialMedia.Core.Aplication.QueryFilters;
 using SocialMedia.Core.DTOs;
-using SocialMedia.Core.Interfaces;
 using SocialMedia.Infrastructure.Services.Interfaces;
 using SocialMediaApi.Responses;
 using Swashbuckle.AspNetCore.Annotations;
@@ -12,7 +12,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace SocialMediaApi.Controllers.v1
 {
 
-  [ApiVersion("1.0")]
+    [ApiVersion("1.0")]
   //[Authorize]
 
   public class PostController : BaseApiController

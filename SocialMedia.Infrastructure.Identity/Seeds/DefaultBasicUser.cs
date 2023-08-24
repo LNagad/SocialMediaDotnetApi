@@ -27,10 +27,6 @@ namespace SocialMedia.Infrastructure.Identity.Seeds
           await userManager.CreateAsync(defaultUser, "Pa$$w0rd1234");
           await userManager.AddToRoleAsync(defaultUser, Roles.Basic.ToString());
         }
-        else
-        {
-          await userManager.AddToRoleAsync(userExist, Roles.Basic.ToString());
-        }
       
       }
 

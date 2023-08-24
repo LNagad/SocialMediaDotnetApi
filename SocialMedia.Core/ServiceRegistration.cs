@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using SocialMedia.Core.Aplication.Interfaces;
+using SocialMedia.Core.Aplication.Interfaces.Services;
 using SocialMedia.Core.Aplication.Services;
-using SocialMedia.Core.Interfaces;
 using SocialMedia.Core.Services;
 using SocialMedia.Core.Validators;
 using System.Reflection;
@@ -13,7 +12,7 @@ using System.Text;
 
 namespace SocialMedia.Core
 {
-  public static class ServiceRegistration
+    public static class ServiceRegistration
   {
     public static IServiceCollection AddApplicationLayer(this IServiceCollection services)
     {

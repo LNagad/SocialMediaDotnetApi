@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using SocialMedia.Core.Aplication.Interfaces;
-using SocialMedia.Core.Domain.Entities;
+using SocialMedia.Core.Aplication.DTOs.Account;
+using SocialMedia.Core.Aplication.Interfaces.Services;
 using SocialMedia.Infrastructure.Services.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -27,32 +27,33 @@ namespace SocialMediaApi.Controllers.v1
     }
 
     [HttpPost]
-    public async Task<IActionResult> Authentication(UserLogin login)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Authentication(AuthenticationRequest login)
     {
       //todo: if It is a valid user
       var validation = await IsValidUser(login);
 
-      if (validation.Item1)
+      if (validation.Item2.HasError)
       {
-        var token = GenerateToken(validation.Item2);
-
-        return Ok(new { token });
+        return BadRequest(Results.BadRequest(validation.Item2.Error));
       }
 
-      return Unauthorized();
+      var token = GenerateToken(validation.Item2);
+
+      return Ok(new { token });
     }
 
 
-    private async Task<(bool, Security)> IsValidUser(UserLogin login)
+    private async Task<(bool, AuthenticationResponse)> IsValidUser(AuthenticationRequest login)
     {
-      var user = await _securityService.GetUser(login);
-      if (user == null) return (false, null);
-      var isValid = _passwordService.Check(user.Password, login.Password);
+      var user = await _securityService.SignInWithEmailAndPasswordAsync(login);
 
-      return (isValid, user);
+      if (user.HasError) return (false, user);
+      
+      return (true, user);
     }
 
-    private string GenerateToken(Security security)
+    private string GenerateToken(AuthenticationResponse security)
     {
       //Header
       var symetricKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Authentication:SecretKey"]));
@@ -60,12 +61,16 @@ namespace SocialMediaApi.Controllers.v1
       var header = new JwtHeader(signingCredentials);
 
       //Claims
-      var claims = new[]
+      var claims = new List<Claim>
       {
         new Claim(ClaimTypes.Name, security.UserName),
-        new Claim("User", security.User),
-        new Claim(ClaimTypes.Role, security.Role.ToString()),
+        new Claim(ClaimTypes.Email, security.Email),
       };
+
+      foreach (var role in security.Roles)
+      {
+        claims.Add(new Claim(ClaimTypes.Role, role));
+      }
 
       //Payload
       var payload = new JwtPayload(

@@ -2,12 +2,13 @@
 using Microsoft.AspNetCore.WebUtilities;
 using SocialMedia.Core.Aplication.DTOs.Account;
 using SocialMedia.Core.Aplication.Enums;
+using SocialMedia.Core.Interfaces.Services;
 using SocialMedia.Infrastructure.Identity.Entities;
 using System.Text;
 
 namespace SocialMedia.Infrastructure.Identity.Services
 {
-  public class AccountService
+  public class AccountService : IAccountService
   {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -21,29 +22,30 @@ namespace SocialMedia.Infrastructure.Identity.Services
     public async Task<AuthenticationResponse> SignInWithEmailAndPasswordAsync(AuthenticationRequest req)
     {
       var response = new AuthenticationResponse();
+      response.HasError = false;
 
       var user = await _userManager.FindByEmailAsync(req.Email);
 
       if (user == null)
       {
         response.HasError = true;
-        response.Error = $"Not account registered with ${req.Email}";
+        response.Error = $"Not account registered with {req.Email}";
         return response;
       }
 
       var passwordMatch = await _signInManager.PasswordSignInAsync(user, req.Password, false, false);
 
-      if(!passwordMatch.Succeeded)
+      if (!passwordMatch.Succeeded)
       {
         response.HasError = true;
-        response.Error = $"Invalid credentials for user ${req.Email}";
+        response.Error = $"Invalid credentials for user {req.Email}";
         return response;
       }
 
       if (!user.EmailConfirmed)
       {
         response.HasError = true;
-        response.Error = $"Account not confirmed for user ${req.Email}";
+        response.Error = $"Account not confirmed for user {req.Email}";
         return response;
       }
 
@@ -60,7 +62,7 @@ namespace SocialMedia.Infrastructure.Identity.Services
 
     public async Task SignOutAsync()
     {
-      await _signInManager.SignOutAsync();                                                
+      await _signInManager.SignOutAsync();
     }
 
     public async Task<RegisterResponse> RegisterBasicUserAsync(RegisterRequest req, string origin)
@@ -73,7 +75,7 @@ namespace SocialMedia.Infrastructure.Identity.Services
       if (emailAlreadyExist != null)
       {
         response.HasError = true;
-        response.Error = $"User with email ${req.Email} already exists";
+        response.Error = $"User with email {req.Email} already exists";
         return response;
       }
 
@@ -82,7 +84,7 @@ namespace SocialMedia.Infrastructure.Identity.Services
       if (userAlreadyExist != null)
       {
         response.HasError = true;
-        response.Error = $"User with username ${req.UserName} already exists";
+        response.Error = $"User with username {req.UserName} already exists";
         return response;
       }
 
@@ -113,25 +115,32 @@ namespace SocialMedia.Infrastructure.Identity.Services
       return response;
     }
 
-    public async Task<string> ConfirmAccountAsync(string userId, string token)
+    public async Task<ConfirmAccountResponse> ConfirmAccountAsync(ConfirmAccountRequest req)
     {
-      var user = await _userManager.FindByIdAsync(userId);
+      var response = new ConfirmAccountResponse();
+      response.HasError = false;
+
+      var user = await _userManager.FindByIdAsync(req.UserId);
 
       if (user == null)
       {
-        return $"User with id ${userId} not found";
+        response.HasError = true;
+        response.Error = $"User with id {req.UserId} not found";
+        return response;
       }
 
-      var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+      var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(req.Token));
 
       var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
 
       if (!result.Succeeded)
       {
-        return $"An error ocurred confirming account for user ${user.Email}";
-      } 
+        response.HasError = true;
+        response.Error = $"An error ocurred confirming account for user {user.Email}";
+        return response;
+      }
 
-      return $"Account successfully confirmed for user ${user.Email}";
+      return response;
     }
 
     public async Task<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest req)
@@ -144,7 +153,7 @@ namespace SocialMedia.Infrastructure.Identity.Services
       if (account == null)
       {
         response.HasError = true;
-        response.Error = $"No account registered with email ${req.Email}";
+        response.Error = $"No account registered with email {req.Email}";
         return response;
       }
 
@@ -172,7 +181,7 @@ namespace SocialMedia.Infrastructure.Identity.Services
       if (account == null)
       {
         response.HasError = true;
-        response.Error = $"No account registered with email ${req.Email}";
+        response.Error = $"No account registered with email {req.Email}";
         return response;
       }
 
@@ -188,12 +197,12 @@ namespace SocialMedia.Infrastructure.Identity.Services
       var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
       code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-      var route  = "User/ConfirmEmail";
+      var route = "User/ConfirmEmail";
 
       var Uri = new Uri(string.Concat($"{origin}/", route));
 
       var verificationUri = QueryHelpers.AddQueryString(Uri.ToString(), "userId", user.Id);
-      verificationUri = QueryHelpers.AddQueryString(Uri.ToString(), "token", code);
+      verificationUri = QueryHelpers.AddQueryString(verificationUri, "token", code);
 
       return verificationUri;
     }

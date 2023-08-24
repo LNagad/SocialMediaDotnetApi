@@ -2,8 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SocialMedia.Core.Interfaces.Services;
 using SocialMedia.Infrastructure.Data;
 using SocialMedia.Infrastructure.Identity.Entities;
+using SocialMedia.Infrastructure.Identity.Services;
 
 namespace SocialMedia.Infrastructure
 {
@@ -33,10 +35,17 @@ namespace SocialMedia.Infrastructure
       services.AddIdentity<ApplicationUser, IdentityRole>()
         .AddEntityFrameworkStores<IdentityContext>()
         .AddDefaultTokenProviders();
-
+      //services.ConfigureApplicationCookie( opt =>
+      //{
+      //  opt.LoginPath = "/Account/Login";
+      //  opt.AccessDeniedPath = "/Account/AccessDenied";
+      //});
       services.AddAuthentication();
       #endregion
 
+      #region Services
+      services.AddTransient<IAccountService, AccountService>();
+      #endregion
       return services;
     }
   }
