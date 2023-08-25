@@ -24,7 +24,7 @@ namespace SocialMedia.Infrastructure
 
       services.AddDbContext<SocialMediaYTContext>(options =>
       {
-        options.UseSqlServer(config.GetConnectionString("LocalDB"));
+        options.UseSqlServer(config.GetConnectionString("SocialMediaHosting"));
       });
 
       return services;

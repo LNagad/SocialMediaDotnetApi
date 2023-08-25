@@ -27,6 +27,33 @@ namespace SocialMediaApi.Extensions
         });
 
         options.DescribeAllParametersInCamelCase();
+        // to add jwt bearer token in swagger
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+          Name = "Authorization",
+          In = ParameterLocation.Header,
+          Type = SecuritySchemeType.ApiKey,
+          Scheme = "Bearer",
+          BearerFormat = "JWT",
+          Description = "Input your bearer token in this format ~ Bearer {your token here}"
+        });
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+          {
+            new OpenApiSecurityScheme
+            {
+              Reference = new OpenApiReference
+              {
+                Id = "Bearer",
+                Type = ReferenceType.SecurityScheme
+              },
+              Scheme = "Bearer",
+              Name = "Bearer",
+              In = ParameterLocation.Header
+            },
+            new List<string>()
+          }
+        });
       });
 
       return services;

@@ -1,4 +1,6 @@
-﻿namespace SocialMedia.Core.Aplication.DTOs.Account
+﻿using System.Text.Json.Serialization;
+
+namespace SocialMedia.Core.Aplication.DTOs.Account
 {
   public class AuthenticationResponse
   {
@@ -8,8 +10,12 @@
     public List<string> Roles { get; set; }
     public string Password { get; set; }
     public bool IsVerified { get; set; }
+    public string JwtToken { get; set; }
+    
+    [JsonIgnore]
+    public string RefreshToken { get; set; }
+
     public bool HasError { get; set; }
     public string Error { get; set; }
-
   }
 }

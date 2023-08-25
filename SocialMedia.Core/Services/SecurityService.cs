@@ -20,13 +20,18 @@ namespace SocialMedia.Core.Aplication.Services
     {
       var signInResult = await _accountService.SignInWithEmailAndPasswordAsync(login);
 
+      if (signInResult.HasError)
+      {
+        throw new BusinessException(signInResult.Error);
+      }
+
       return signInResult;
     }
 
     public async Task<RegisterResponse> RegisterUserAsync(RegisterRequest registerRequest, string origin)
     {
       var registerResponse = await _accountService.RegisterBasicUserAsync(registerRequest, origin);
-      
+
       if (registerResponse.HasError)
       {
         throw new BusinessException(registerResponse.Error);

@@ -11,9 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services
-  .AddControllers(opt => opt.Filters.Add<GlobalExceptionFilter>())
+  .AddControllers(opt => opt.Filters.Add<GlobalExceptionFilter>());
   //ignore null
-  .AddNewtonsoftJson(opt => opt.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore);
+  //.AddNewtonsoftJson(opt => opt.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore);
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -28,8 +28,6 @@ builder.Services.AddServicesInfrastructure();
 
 builder.Services.AddSwaggerExtension();
 builder.Services.AddApiVersioningExtension();
-
-builder.Services.AddJWTAuthentication(builder.Configuration);
 
 var app = builder.Build();
 
@@ -54,6 +52,16 @@ using (var scope = app.Services.CreateScope())
 }
 
 
+app.Use(async (context, next) =>
+{
+  if (context.Request.Path == "/")
+  {
+    context.Response.Redirect("/swagger"); // Cambia "tu-ruta-destino" por la URL a la que deseas redirigir
+    return;
+  }
+
+  await next();
+});
 
 app.UseSwaggerExtension();
 

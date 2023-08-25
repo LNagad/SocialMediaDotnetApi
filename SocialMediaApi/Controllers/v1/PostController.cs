@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SocialMedia.Core.Aplication.CustomEntities;
+using SocialMedia.Core.Aplication.Enums;
 using SocialMedia.Core.Aplication.Interfaces.Services;
 using SocialMedia.Core.Aplication.QueryFilters;
 using SocialMedia.Core.DTOs;
@@ -12,8 +14,8 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace SocialMediaApi.Controllers.v1
 {
 
-    [ApiVersion("1.0")]
-  //[Authorize]
+  [ApiVersion("1.0")]
+  [Authorize(Roles = nameof(Roles.Admin) )]
 
   public class PostController : BaseApiController
   {
@@ -34,6 +36,8 @@ namespace SocialMediaApi.Controllers.v1
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<PostDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public IActionResult GetPosts([FromQuery] PostQueryFilter filters)
     {
       var postTuple = _postService.GetPosts(filters);

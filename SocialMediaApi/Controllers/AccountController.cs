@@ -4,24 +4,24 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialMedia.Core.Aplication.DTOs.Account;
 using SocialMedia.Core.Aplication.Interfaces.Services;
-using SocialMedia.Core.Domain.Enums;
 using SocialMedia.Infrastructure.Services.Interfaces;
 using SocialMediaApi.Responses;
 
-namespace SocialMediaApi.Controllers.v1
+namespace SocialMediaApi.Controllers
 {
 
-  [ApiVersion("1.0")]
-  [Authorize(Roles = nameof(RoleType.Admin))]
+  [ApiController]
+  [Produces("application/json")]
+  [Route("api/[controller]")]
 
-  public class SecurityController : BaseApiController
+  public class AccountController: ControllerBase
   {
     private readonly ISecurityService _securityService;
     private readonly IMapper _mapper;
     private readonly IValidator<RegisterRequest> _validator;
     private readonly IPasswordService _passwordService;
 
-    public SecurityController(ISecurityService securityService, IMapper mapper,
+    public AccountController(ISecurityService securityService, IMapper mapper,
       IValidator<RegisterRequest> validator, IPasswordService passwordService)
     {
       _securityService = securityService;
@@ -30,8 +30,22 @@ namespace SocialMediaApi.Controllers.v1
       _passwordService = passwordService;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> RegisterUser(RegisterRequest registerRequest)
+    [AllowAnonymous]
+    [HttpPost("authenticate")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> AuthenticateAsync(AuthenticationRequest login)
+    {
+      var authenticationResponse = await _securityService.SignInWithEmailAndPasswordAsync(login);
+
+      var apiResponse = new ApiResponse<AuthenticationResponse>(authenticationResponse);
+
+      return Ok(apiResponse);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("register")]
+    public async Task<IActionResult> RegisterUserAsync(RegisterRequest registerRequest)
     {
       var result = await _validator.ValidateAsync(registerRequest);
 
@@ -51,14 +65,14 @@ namespace SocialMediaApi.Controllers.v1
         return BadRequest("Origin header is not valid");
       }
 
-      var registerResponse =  await _securityService.RegisterUserAsync(registerRequest, origin);
+      var registerResponse = await _securityService.RegisterUserAsync(registerRequest, origin);
 
       var apiResponse = new ApiResponse<RegisterResponse>(registerResponse);
       return Ok(apiResponse);
     }
 
     [AllowAnonymous]
-    [HttpGet]
+    [HttpGet("confirm-email")]
     public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmAccountRequest req)
     {
       var result = await _securityService.ConfirmEmailAsync(req);
@@ -67,8 +81,7 @@ namespace SocialMediaApi.Controllers.v1
       return Ok(apiResponse);
     }
 
-    [AllowAnonymous]
-    [HttpPost("ForgotPassword")]
+    [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest req)
     {
       var origin = Request.Headers["origin"];
@@ -88,7 +101,7 @@ namespace SocialMediaApi.Controllers.v1
     }
 
     [AllowAnonymous]
-    [HttpPost("ResetPassword")]
+    [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword(ResetPasswordRequest req)
     {
       var result = await _securityService.ResetPasswordAsync(req);

@@ -1,10 +1,17 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using SocialMedia.Core.Aplication.DTOs.Account;
 using SocialMedia.Core.Aplication.Enums;
+using SocialMedia.Core.Domain.Settings;
 using SocialMedia.Core.Interfaces.Services;
 using SocialMedia.Infrastructure.Identity.Entities;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+
 
 namespace SocialMedia.Infrastructure.Identity.Services
 {
@@ -12,11 +19,17 @@ namespace SocialMedia.Infrastructure.Identity.Services
   {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly JWTSettings _jwtSettings;
 
-    public AccountService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+    public AccountService(
+      UserManager<ApplicationUser> userManager, 
+      SignInManager<ApplicationUser> signInManager,
+      IOptions<JWTSettings> jwtSettings
+      )
     {
       _userManager = userManager;
       _signInManager = signInManager;
+      _jwtSettings = jwtSettings.Value;
     }
 
     public async Task<AuthenticationResponse> SignInWithEmailAndPasswordAsync(AuthenticationRequest req)
@@ -49,14 +62,23 @@ namespace SocialMedia.Infrastructure.Identity.Services
         return response;
       }
 
+      JwtSecurityToken jwtSecurityToken = await GenerateJWToken(user);
+
       response.Id = user.Id;
       response.Email = user.Email;
       response.UserName = user.UserName;
+
       //wait until get roles
       var rolesList = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
+
       response.Roles = rolesList.ToList();
       response.IsVerified = user.EmailConfirmed;
-
+      
+      response.JwtToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+      
+      var refreshToken = GenerateRefreshToken();
+      response.RefreshToken = refreshToken.Token;
+      
       return response;
     }
 
@@ -192,6 +214,7 @@ namespace SocialMedia.Infrastructure.Identity.Services
       return response;
     }
 
+    #region Private Methods
     private async Task<string> SendVerificationEmailUri(ApplicationUser user, string origin)
     {
       var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -220,5 +243,71 @@ namespace SocialMedia.Infrastructure.Identity.Services
 
       return verificationUri;
     }
+
+    private async Task<JwtSecurityToken> GenerateJWToken(ApplicationUser user)
+    {
+      var userClaims = await _userManager.GetClaimsAsync(user);
+      var roles = await _userManager.GetRolesAsync(user);
+
+      var roleClaims = new List<Claim>();
+
+      foreach (var role in roles)
+      {
+        roleClaims.Add(new Claim("roles", role));
+      }
+
+      var claims = new[]
+      {
+        new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+        new Claim("uid", user.Id)
+      }
+      .Union(userClaims)
+      .Union(roleClaims);
+
+
+      var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+      var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+
+      var jwtSecurityToken = new JwtSecurityToken(
+        issuer: _jwtSettings.Issuer,
+        audience: _jwtSettings.Audience,
+        claims: claims,
+        expires: DateTime.UtcNow.AddMinutes(_jwtSettings.DurationInMinutes),
+        signingCredentials: signingCredentials
+      );
+
+      return jwtSecurityToken;
+    }
+
+    private RefreshToken GenerateRefreshToken() {
+
+      var refreshToken = new RefreshToken()
+      {
+        Token = RandomTokenString(),
+        Expires = DateTime.UtcNow.AddDays(7),
+        Created = DateTime.UtcNow,
+      };
+
+      return refreshToken;
+    }
+
+    private string RandomTokenString()
+    {
+      var randomBytes = new byte[40];
+      string refreshToken = "";
+
+      using (var rng = RandomNumberGenerator.Create())
+      {
+        rng.GetBytes(randomBytes);
+        //refreshToken = Convert.ToBase64String(randomBytes);
+        return BitConverter.ToString(randomBytes).Replace("-", "");
+      }
+
+      //return refreshToken;
+    }
+
+    #endregion
   }
 }
