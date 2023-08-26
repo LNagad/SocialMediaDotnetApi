@@ -11,3 +11,37 @@ This repository presents an extensive exploration of ASP.NET Web API, focusing o
 - In-depth coverage of advanced concepts like the **CQRS (Command Query Responsibility Segregation)** pattern.
 - Implementation of the **Mediator** pattern to enhance communication between components.
 
+## apssetings.json structure:
+
+```
+{
+  "UseInMemoryDatabase": "",
+  "ConnectionStrings": {
+    "SocialMediaSomee": "",
+    "SocialMediaHosting": "",
+    "SocialMediaHostingIdentity": ""
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "",
+      "Microsoft.AspNetCore": ""
+    }
+  },
+  "AllowedHosts": "",
+  "Authentication": {
+    "SecretKey": "",
+    "Issuer": "",
+    "Audience": "",
+    "DurationInMinutes": 
+  },
+  "PaginationOptions": {
+    "DefaultPageSize": ,
+    "DefaultPageNumber": 
+  },
+  "PasswordOptions": {
+    "SaltSize": ,
+    "KeySize": ,
+    "Iterations": 
+  }
+}
+```
