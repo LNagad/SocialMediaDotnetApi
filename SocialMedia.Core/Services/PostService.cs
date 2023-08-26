@@ -112,7 +112,7 @@ namespace SocialMedia.Core.Services
 
     public async Task<bool> DeletePost(int id)
     {
-      await _unitOfWork.PostRepository.DeleteAsync(id);
+      await _unitOfWork.PostRepository.FindAndDeleteAsync(id);
 
       await _unitOfWork.SaveChangesAsync();
 

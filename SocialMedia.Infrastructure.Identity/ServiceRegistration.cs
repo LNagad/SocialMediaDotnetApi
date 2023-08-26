@@ -31,7 +31,7 @@ namespace SocialMedia.Infrastructure
         services.AddDbContext<IdentityContext>(opt =>
         {
           opt.EnableSensitiveDataLogging();
-          opt.UseSqlServer(config.GetConnectionString("SocialMediaHosting"),
+          opt.UseSqlServer(config.GetConnectionString("SocialMediaSomee"),
           m => m.MigrationsAssembly(typeof(IdentityContext).Assembly.FullName));
         });
 

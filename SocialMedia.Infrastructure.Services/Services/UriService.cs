@@ -13,9 +13,17 @@ namespace SocialMedia.Infrastructure.Services.Services
       _baseUri = uri;
     }
 
-    public Uri GetPostPaginationUrl(PostQueryFilter filter, string actionUrl)
+    public Uri GetPostPaginationNextUrl(PostQueryFilter filter, string actionUrl, bool nextPage)
     {
-      string baseUrl = $"{_baseUri}{actionUrl}";
+      string pagination = nextPage ? $"?pageSize={filter.PageSize}&pageNumber={filter.PageNumber + 1}" : "";
+      string baseUrl = $"{_baseUri}{actionUrl}{pagination}";
+      return new Uri(baseUrl);
+    }
+
+    public Uri GetPostPaginationPreviousUrl(PostQueryFilter filter, string actionUrl, bool previousPage)
+    {
+      string pagination = previousPage ? $"?pageSize={filter.PageSize}&pageNumber={filter.PageNumber - 1}" : "";
+      string baseUrl = $"{_baseUri}{actionUrl}{pagination}";
       return new Uri(baseUrl);
     }
 

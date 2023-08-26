@@ -4,9 +4,15 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SocialMedia.Core.Aplication.CustomEntities;
 using SocialMedia.Core.Aplication.Enums;
-using SocialMedia.Core.Aplication.Interfaces.Services;
+using SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost;
+using SocialMedia.Core.Aplication.Features.Posts.Commands.DeletePostById;
+using SocialMedia.Core.Aplication.Features.Posts.Commands.UpdatePostById;
+using SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts;
+using SocialMedia.Core.Aplication.Features.Posts.Queries.GetPostById;
 using SocialMedia.Core.Aplication.QueryFilters;
+using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;
+using SocialMedia.Core.Validators;
 using SocialMedia.Infrastructure.Services.Interfaces;
 using SocialMediaApi.Responses;
 using Swashbuckle.AspNetCore.Annotations;
@@ -19,47 +25,38 @@ namespace SocialMediaApi.Controllers.v1
 
   public class PostController : BaseApiController
   {
-    private readonly IPostService _postService;
-    private readonly IValidator<PostDto> _validator;
     private readonly IUriService _uriService;
 
-    public PostController(IPostService postService,
-      IValidator<PostDto> validator, IUriService uriService)
+    public PostController(IUriService uriService)
     {
-      _postService = postService;
-      _validator = validator;
       _uriService = uriService;
     }
 
     [HttpGet(Name = nameof(GetPosts))]
-    [SwaggerOperation(Summary = "Public: Get all posts")]
+    [SwaggerOperation(Summary = "Public: Get all pagedPost")]
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<PostDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public IActionResult GetPosts([FromQuery] PostQueryFilter filters)
+    public async Task<IActionResult> GetPosts([FromQuery] GetAllPostParameters filters)
     {
-      var postTuple = _postService.GetPosts(filters);
-      var posts = postTuple.Item1;
-      var postsDto = postTuple.Item2;
+      var postTuple = await Mediator.Send(new GetAllPostsQuery() { Parameters = filters });
 
-      var metadata = new Metadata
+      var (postsDto, pagedPost) = postTuple;
+
+      var postQueryFilter = new PostQueryFilter
       {
-        TotalCount = posts.TotalCount,
-        PageSize = posts.PageSize,
-        CurrentPage = posts.CurrentPage,
-        TotalPages = posts.TotalPages,
-        HasNextPage = posts.HasNextPage,
-        HasPreviousPage = posts.HasPreviousPage,
-        NextPageUrl = _uriService.GetPostPaginationUrl(filters, Url.RouteUrl(nameof(GetPosts))).ToString(),
-        PreviousPageUrl = _uriService.GetPostPaginationUrl(filters, Url.RouteUrl(nameof(GetPosts))).ToString()
+        UserId = filters.UserId,
+        Date = filters.Date,
+        Description = filters.Description,
+        PageSize = filters.PageSize,
+        PageNumber = filters.PageNumber
       };
 
-      var apiResponse = new ApiResponse<IEnumerable<PostDto>>(postsDto)
-      {
-        Meta = metadata
-      };
+      var metadata = CreateMetadata(pagedPost, postQueryFilter);
+
+      var apiResponse = new ApiResponse<IEnumerable<PostDto>>(postsDto){ Meta = metadata };
 
       Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
       return Ok(apiResponse);
@@ -71,28 +68,25 @@ namespace SocialMediaApi.Controllers.v1
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetPost(int id)
     {
-      var post = await _postService.GetPost(id);
-
-      var apiResponse = new ApiResponse<PostDto>(post);
-      return Ok(apiResponse);
+      return Ok(await Mediator.Send(new GetPostByIdQuery() { Id = id }));
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(ApiResponse<PostDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PostDto>), StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Post(PostDto postDto)
+    public async Task<IActionResult> Post(CreatePostCommand command)
     {
-      var result = await _validator.ValidateAsync(postDto);
+      //var result = await _validator.ValidateAsync(command);
 
-      if (!result.IsValid)
-      {
-        return BadRequest(Results.ValidationProblem(result.ToDictionary()));
-      }
-      await _postService.InsertPost(postDto);
+      //if (!result.IsValid)
+      //{
+      //  return BadRequest(Results.ValidationProblem(result.ToDictionary()));
+      //}
 
-      var apiResponse = new ApiResponse<PostDto>(postDto);
-      return Ok(apiResponse);
+      await Mediator.Send(command);
+
+      return NoContent();
     }
 
     [HttpPut("{id}")]
@@ -100,23 +94,21 @@ namespace SocialMediaApi.Controllers.v1
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Put(int id, PostDto postDto)
+    public async Task<IActionResult> Put(int id, UpdatePostCommand command)
     {
-      var result = await _validator.ValidateAsync(postDto);
+      //var result = await _validator.ValidateAsync(command);
 
-      if (!result.IsValid)
+      //if (!result.IsValid)
+      //{
+      //  return BadRequest(Results.ValidationProblem(result.ToDictionary()));
+      //}
+
+      if (id != command.PostId)
       {
-        return BadRequest(Results.ValidationProblem(result.ToDictionary()));
+        return BadRequest();
       }
 
-      bool response = await _postService.UpdatePost(postDto, id);
-
-      if (!response)
-      {
-        return NotFound();
-      }
-
-      return Ok(response);
+      return Ok(await Mediator.Send(command));
     }
 
     [HttpDelete("{id}")]
@@ -125,14 +117,28 @@ namespace SocialMediaApi.Controllers.v1
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Delete(int id)
     {
-      bool response = await _postService.DeletePost(id);
-
-      if (!response)
-      {
-        return NotFound();
-      }
-
-      return Ok(response);
+      await Mediator.Send(new DeletePostByIdCommand() { Id = id });
+      return NoContent();
     }
+
+    private Metadata CreateMetadata(PagedList<Post> pagedPost, PostQueryFilter postQueryFilter)
+    {
+      var apiEndpoinRoute = Url.RouteUrl(nameof(GetPosts));
+      var nextUri = _uriService.GetPostPaginationNextUrl(postQueryFilter, apiEndpoinRoute, pagedPost.HasNextPage).ToString();
+      var prevUri = _uriService.GetPostPaginationPreviousUrl(postQueryFilter, apiEndpoinRoute, pagedPost.HasPreviousPage).ToString();
+
+      return new Metadata
+      {
+        TotalCount = pagedPost.TotalCount,
+        PageSize = pagedPost.PageSize,
+        CurrentPage = pagedPost.CurrentPage,
+        TotalPages = pagedPost.TotalPages,
+        HasNextPage = pagedPost.HasNextPage,
+        HasPreviousPage = pagedPost.HasPreviousPage,
+        NextPageUrl = nextUri,
+        PreviousPageUrl = prevUri
+      };
+    }
+
   }
 }

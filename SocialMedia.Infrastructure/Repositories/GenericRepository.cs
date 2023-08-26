@@ -9,21 +9,54 @@ namespace SocialMedia.Infrastructure.Repositories
   public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity : BaseEntity
   {
     
-    private readonly SocialMediaYTContext _context;
-    protected DbSet<Entity> _entities;
+    private readonly SocialMediaYTContext _dbContext;
+    protected DbSet<Entity> _entities; // permite acceder a las entidades de la base de datos desde los hijos de esta clase
 
-    public GenericRepository(SocialMediaYTContext context)
+    public GenericRepository(SocialMediaYTContext dbContext)
     {
-      _context = context;
-      _entities = _context.Set<Entity>();
+      _dbContext = dbContext;
+      _entities = _dbContext.Set<Entity>();
     }
 
     public virtual IEnumerable<Entity> GetAll()
     {
-      return _entities.AsNoTracking().AsEnumerable();
+      return _entities.AsNoTracking().AsEnumerable(); //Deferred execution
     }
 
-    public virtual async Task<Entity> GetByIdAsync(int id)
+    public virtual async Task<List<Entity>> GetAllAsync()
+    {
+      return await _entities.ToListAsync(); //No Deferred execution
+    }
+
+    public virtual async Task<List<Entity>> GetAllWithIncludeAsync(List<string> properties)
+    {
+      var query = _entities.AsQueryable();
+
+      foreach (var property in properties)
+      {
+        query = query.Include(property);
+      }
+
+      var result = await query.ToListAsync();
+
+      return result;
+    }
+
+    public virtual async Task<Entity> GetByIdWithIncludeAsync(int id, List<string> properties)
+    {
+      var query = _entities.AsQueryable();
+
+      foreach (var property in properties)
+      {
+        query = query.Include(property);
+      }
+
+      var result = await query.FirstOrDefaultAsync(p => p.Id == id);
+
+      return result;
+    }
+
+    public virtual async Task<Entity?> GetByIdAsync(int id)
     {
       return await _entities.FindAsync(id);
     }
@@ -33,16 +66,34 @@ namespace SocialMedia.Infrastructure.Repositories
       await _entities.AddAsync(entity);
     }
 
-    public virtual void Update(Entity entity)
+    public virtual Entity Update(Entity entity)
     {
       _entities.Update(entity);
+
+      return entity;
     }
 
-    public virtual async Task DeleteAsync(int id)
+    public virtual void Delete(Entity entity)
+    {
+      _dbContext.Set<Entity>().Remove(entity);
+    }
+
+    public virtual async Task<Entity> FindAndUpdateAsync(Entity entity, int id)
+    {
+      var entry = await GetByIdAsync(id);
+
+      if (entry == null) throw new BusinessException("Something went wrong when updating");
+
+      _dbContext.Entry(entry).CurrentValues.SetValues(entity);
+
+      return entry;
+    }
+
+    public virtual async Task FindAndDeleteAsync(int id)
     {
       var entity = await GetByIdAsync(id);
 
-      if (entity == null) throw new BusinessException("Something went wrong");
+      if (entity == null) throw new BusinessException("Something went wrong when deleting");
       _entities.Remove(entity);
     }
 

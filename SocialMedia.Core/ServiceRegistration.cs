@@ -12,16 +12,19 @@ using System.Text;
 
 namespace SocialMedia.Core
 {
-    public static class ServiceRegistration
+  public static class ServiceRegistration
   {
     public static IServiceCollection AddApplicationLayer(this IServiceCollection services)
     {
 
-      services.AddTransient<IPostService, PostService>();
-      services.AddTransient<ISecurityService, SecurityService>();
-
+      services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
       services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
       services.AddValidatorsFromAssemblyContaining<PostValidator>();
+
+      #region Services
+      services.AddTransient<IPostService, PostService>();
+      services.AddTransient<ISecurityService, SecurityService>();
+      #endregion
 
       return services;
     }
