@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
 using MediatR;
+using SocialMedia.Core.Aplication.Exceptions;
+using SocialMedia.Core.Aplication.Wrappers;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
+using System.Net;
 
 namespace SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost
 {
-  public class CreatePostCommand : IRequest<PostDto>
+  public class CreatePostCommand : IRequest<Response<PostDto>>
   {
 
     public int UserId { get; set; }
@@ -19,7 +22,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost
     public string Image { get; set; }
   }
 
-  public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, PostDto>
+  public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Response<PostDto>>
   {
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
@@ -30,7 +33,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost
       _unitOfWork = unitOfWork;
     }
 
-    public async Task<PostDto> Handle(CreatePostCommand command, CancellationToken cancellationToken)
+    public async Task<Response<PostDto>> Handle(CreatePostCommand command, CancellationToken cancellationToken)
     {
       var postDto = new PostDto
       {
@@ -41,8 +44,8 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost
       };
 
       var post = await InsertPost(postDto);
-
-      return post;
+      Response<PostDto> response = new() { Data = post };
+      return response;
     }
 
     private async Task<PostDto> InsertPost(PostDto postDto)
@@ -53,12 +56,12 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost
 
       if (user == null)
       {
-        throw new BusinessException("User doesn't exist");
+        throw new ApiException("User doesn't exist", (int)HttpStatusCode.NotFound);
       }
 
       if (post.Description.Contains("Sexo"))
       {
-        throw new BusinessException("Content not allowed");
+        throw new ApiException("Content not allowed", (int)HttpStatusCode.BadRequest);
       }
 
       var userPosts = await _unitOfWork.PostRepository.GetPostsByUser(post.UserId);
@@ -70,7 +73,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost
         // han transcurrido menos de 7 días desde la fecha de la última publicación ?
         if ((DateTime.Now - lastPost.Date).TotalDays < 7)
         {
-          throw new BusinessException("You are not able to publish the post");
+          throw new ApiException("You are not able to publish the post", (int)HttpStatusCode.BadRequest);
         }
       }
 

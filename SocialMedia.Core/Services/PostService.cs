@@ -1,17 +1,17 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Options;
-using SocialMedia.Core.Aplication.CustomEntities;
+using SocialMedia.Core.Aplication.DTOs.CustomEntities;
+using SocialMedia.Core.Aplication.Exceptions;
 using SocialMedia.Core.Aplication.Interfaces.Services;
 using SocialMedia.Core.Aplication.QueryFilters;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.Domain.Settings;
 using SocialMedia.Core.DTOs;
-using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
 
 namespace SocialMedia.Core.Services
 {
-    public class PostService : IPostService
+  public class PostService : IPostService
   {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
@@ -67,12 +67,12 @@ namespace SocialMedia.Core.Services
 
       if (user == null)
       {
-        throw new BusinessException("User doesn't exist");
+        throw new ApiException("User doesn't exist", 404);
       }
 
       if (post.Description.Contains("Sexo"))
       {
-        throw new BusinessException("Content not allowed");
+        throw new ApiException("Content not allowed", 400);
       }
 
       var userPosts = await _unitOfWork.PostRepository.GetPostsByUser(post.UserId);
@@ -84,7 +84,7 @@ namespace SocialMedia.Core.Services
         // han transcurrido menos de 7 días desde la fecha de la última publicación ?
         if ((DateTime.Now - lastPost.Date).TotalDays < 7)
         {
-          throw new BusinessException("You are not able to publish the post");
+          throw new ApiException("You are not able to publish the post", 400);
         }
       }
 

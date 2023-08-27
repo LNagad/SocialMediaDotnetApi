@@ -2,6 +2,8 @@
 using SocialMedia.Core.Aplication.DTOs;
 using SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost;
 using SocialMedia.Core.Aplication.Features.Posts.Commands.UpdatePostById;
+using SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts;
+using SocialMedia.Core.Aplication.QueryFilters;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;
 
@@ -31,6 +33,10 @@ namespace SocialMedia.Core.Mappings
        .ReverseMap()
        .ForMember(dest => dest.Comments, opt => opt.Ignore())
        .ForMember(dest => dest.User, opt => opt.Ignore());
+
+
+      CreateMap<PostQueryFilter, GetAllPostParameters>()
+      .ReverseMap();
 
     }
   }

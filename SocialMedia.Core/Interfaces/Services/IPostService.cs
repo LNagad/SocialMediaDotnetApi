@@ -1,4 +1,4 @@
-﻿using SocialMedia.Core.Aplication.CustomEntities;
+﻿using SocialMedia.Core.Aplication.DTOs.CustomEntities;
 using SocialMedia.Core.Aplication.QueryFilters;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;

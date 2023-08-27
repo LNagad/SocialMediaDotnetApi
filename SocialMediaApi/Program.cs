@@ -5,7 +5,6 @@ using SocialMedia.Infrastructure;
 using SocialMedia.Infrastructure.Identity.Entities;
 using SocialMedia.Infrastructure.Identity.Seeds;
 using SocialMediaApi.Extensions;
-using SocialMediaApi.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers(opt =>
 {
-  opt.Filters.Add<GlobalExceptionFilter>();
   opt.Filters.Add(new ProducesAttribute("application/json"));
 }).ConfigureApiBehaviorOptions(opt =>
 {
@@ -33,7 +31,7 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddApplicationLayer();
 builder.Services.AddPersistenceInfrastructure(builder.Configuration);
-builder.Services.AddIdentityInfrastructure(builder.Configuration);
+builder.Services.AddIdentityInfrastructureForApi(builder.Configuration);
 builder.Services.AddServicesInfrastructure();
 
 builder.Services.AddSwaggerExtension();
@@ -73,17 +71,16 @@ app.Use(async (context, next) =>
   await next();
 });
 
-app.UseSwaggerExtension();
-
-app.UseExceptionHandler("/Error");
-app.UseHsts();
-
-app.UseHttpsRedirection();
-
 app.UseRouting();
+app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseSwaggerExtension();
+app.UseErrorHandlerMiddleware();
+
+app.UseHsts();
 
 app.UseHealthChecks("/health");
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SocialMedia.Core.Aplication.Exceptions;
 using SocialMedia.Core.Domain.Common;
 using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
@@ -82,7 +83,7 @@ namespace SocialMedia.Infrastructure.Repositories
     {
       var entry = await GetByIdAsync(id);
 
-      if (entry == null) throw new BusinessException("Something went wrong when updating");
+      if (entry == null) throw new ApiException("Something went wrong when updating", 500);
 
       _dbContext.Entry(entry).CurrentValues.SetValues(entity);
 
@@ -93,7 +94,7 @@ namespace SocialMedia.Infrastructure.Repositories
     {
       var entity = await GetByIdAsync(id);
 
-      if (entity == null) throw new BusinessException("Something went wrong when deleting");
+      if (entity == null) throw new ApiException("Something went wrong when deleting", 500);
       _entities.Remove(entity);
     }
 

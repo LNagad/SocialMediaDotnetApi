@@ -1,12 +1,15 @@
 ﻿using AutoMapper;
 using MediatR;
+using SocialMedia.Core.Aplication.Exceptions;
+using SocialMedia.Core.Aplication.Wrappers;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Interfaces;
+using System.Net;
 
 namespace SocialMedia.Core.Aplication.Features.Posts.Commands.UpdatePostById
 {
-  public class UpdatePostCommand : IRequest<PostUpdateResponse>
+  public class UpdatePostCommand : IRequest<Response<PostUpdateResponse>>
   {
     public int PostId { get; set; }
     public int UserId { get; set; }
@@ -15,7 +18,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.UpdatePostById
     public string Image { get; set; }
   }
 
-  public class UpdatePostCommandHandler : IRequestHandler<UpdatePostCommand, PostUpdateResponse>
+  public class UpdatePostCommandHandler : IRequestHandler<UpdatePostCommand, Response<PostUpdateResponse>>
   {
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
@@ -27,7 +30,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.UpdatePostById
     }
 
 
-    public async Task<PostUpdateResponse> Handle(UpdatePostCommand command, CancellationToken cancellationToken)
+    public async Task<Response<PostUpdateResponse>> Handle(UpdatePostCommand command, CancellationToken cancellationToken)
     {
       var entity = _mapper.Map<Post>(command);
 
@@ -43,14 +46,14 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.UpdatePostById
 
       };
 
-      return response;
+      return new Response<PostUpdateResponse>() { Data = response };
     }
 
     private async Task<PostDto> UpdatePost(Post post, int id)
     {
       var existingPost = await _unitOfWork.PostRepository.GetByIdAsync(id);
 
-      if (existingPost == null) throw new Exception("Post doesn't exist");
+      if (existingPost == null) throw new ApiException("Post doesn't exist", (int)HttpStatusCode.NotFound);
 
       existingPost.Image = post.Image;
       existingPost.Description = post.Description;

@@ -1,8 +1,9 @@
-﻿using FluentValidation;
+﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using SocialMedia.Core.Aplication.CustomEntities;
+using SocialMedia.Core.Aplication.DTOs.CustomEntities;
 using SocialMedia.Core.Aplication.Enums;
 using SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost;
 using SocialMedia.Core.Aplication.Features.Posts.Commands.DeletePostById;
@@ -10,6 +11,7 @@ using SocialMedia.Core.Aplication.Features.Posts.Commands.UpdatePostById;
 using SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts;
 using SocialMedia.Core.Aplication.Features.Posts.Queries.GetPostById;
 using SocialMedia.Core.Aplication.QueryFilters;
+using SocialMedia.Core.Aplication.Wrappers;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Validators;
@@ -20,17 +22,19 @@ using System.Net.Mime;
 
 namespace SocialMediaApi.Controllers.v1
 {
-  [ApiVersion("1.0")]
+    [ApiVersion("1.0")]
   [Authorize(Roles = nameof(Roles.Admin) )]
 
   [SwaggerTag("Posts Maintenance")]
   public class PostController : BaseApiController
   {
     private readonly IUriService _uriService;
+    private readonly IMapper _mapper;
 
-    public PostController(IUriService uriService)
+    public PostController(IUriService uriService, IMapper mapper)
     {
       _uriService = uriService;
+      _mapper = mapper;
     }
 
     [HttpGet(Name = nameof(GetPosts))]
@@ -42,22 +46,13 @@ namespace SocialMediaApi.Controllers.v1
     )]
     public async Task<IActionResult> GetPosts([FromQuery] GetAllPostParameters filters)
     {
-      var postTuple = await Mediator.Send(new GetAllPostsQuery() { Parameters = filters });
+      var (postsDto, pagedPost) = await Mediator.Send(new GetAllPostsQuery() { Parameters = filters });
 
-      var (postsDto, pagedPost) = postTuple;
+      //var (postsDto, pagedPost) = postTuple;
 
-      var postQueryFilter = new PostQueryFilter
-      {
-        UserId = filters.UserId,
-        Date = filters.Date,
-        Description = filters.Description,
-        PageSize = filters.PageSize,
-        PageNumber = filters.PageNumber
-      };
+      var metadata = CreateMetadata(pagedPost, filters);
 
-      var metadata = CreateMetadata(pagedPost, postQueryFilter);
-
-      var apiResponse = new ApiResponse<IEnumerable<PostDto>>(postsDto){ Meta = metadata };
+      var apiResponse = new Response<IEnumerable<PostDto>>(postsDto, meta: metadata);
 
       Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
       return Ok(apiResponse);
@@ -77,7 +72,7 @@ namespace SocialMediaApi.Controllers.v1
 
     [HttpPost]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [SwaggerOperation(
       Summary = "Post creating",
@@ -92,9 +87,7 @@ namespace SocialMediaApi.Controllers.v1
       //  return BadRequest(Results.ValidationProblem(result.ToDictionary()));
       //}
 
-      await Mediator.Send(command);
-
-      return NoContent();
+      return Ok(await Mediator.Send(command));
     }
 
     [HttpPut("{id}")]
@@ -137,8 +130,10 @@ namespace SocialMediaApi.Controllers.v1
     }
 
     #region Private Methods
-    private Metadata CreateMetadata(PagedList<Post> pagedPost, PostQueryFilter postQueryFilter)
+    private Metadata CreateMetadata(PagedList<Post> pagedPost, GetAllPostParameters filters)
     {
+      var postQueryFilter = _mapper.Map<PostQueryFilter>(filters);
+
       var apiEndpoinRoute = Url.RouteUrl(nameof(GetPosts));
       var nextUri = _uriService.GetPostPaginationNextUrl(postQueryFilter, apiEndpoinRoute, pagedPost.HasNextPage).ToString();
       var prevUri = _uriService.GetPostPaginationPreviousUrl(postQueryFilter, apiEndpoinRoute, pagedPost.HasPreviousPage).ToString();

@@ -1,4 +1,5 @@
 ﻿using SocialMedia.Core.Aplication.DTOs.Account;
+using SocialMedia.Core.Aplication.Exceptions;
 using SocialMedia.Core.Aplication.Interfaces.Services;
 using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
@@ -22,7 +23,7 @@ namespace SocialMedia.Core.Aplication.Services
 
       if (signInResult.HasError)
       {
-        throw new BusinessException(signInResult.Error);
+        throw new ApiException(signInResult.Error);
       }
 
       return signInResult;
@@ -34,7 +35,7 @@ namespace SocialMedia.Core.Aplication.Services
 
       if (registerResponse.HasError)
       {
-        throw new BusinessException(registerResponse.Error);
+        throw new ApiException(registerResponse.Error);
       }
 
       return registerResponse;
@@ -46,7 +47,7 @@ namespace SocialMedia.Core.Aplication.Services
 
       if (result.HasError)
       {
-        throw new BusinessException(result.Error);
+        throw new ApiException(result.Error);
       }
 
       return result;
@@ -58,7 +59,7 @@ namespace SocialMedia.Core.Aplication.Services
 
       if (result.HasError)
       {
-        throw new BusinessException(result.Error);
+        throw new ApiException(result.Error);
       }
 
       return result;
@@ -70,7 +71,7 @@ namespace SocialMedia.Core.Aplication.Services
 
       if (result.HasError)
       {
-        throw new BusinessException(result.Error);
+        throw new ApiException(result.Error);
       }
 
       return result;

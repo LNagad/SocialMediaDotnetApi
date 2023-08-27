@@ -25,4 +25,8 @@
     <ProjectReference Include="..\SocialMedia.Core.Domain\SocialMedia.Core.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+
 </Project>

@@ -1,18 +1,20 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Options;
-using SocialMedia.Core.Aplication.CustomEntities;
+using SocialMedia.Core.Aplication.DTOs.CustomEntities;
+using SocialMedia.Core.Aplication.Exceptions;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.Domain.Settings;
 using SocialMedia.Core.DTOs;
 using SocialMedia.Core.Interfaces;
+using System.Net;
 
 namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts
 {
-  /// <summary>
-  /// Paraments to filter the posts
-  /// </summary>
-  public class GetAllPostsQuery : IRequest<(IEnumerable<PostDto>, PagedList<Post>)>
+    /// <summary>
+    /// Paraments to filter the posts
+    /// </summary>
+    public class GetAllPostsQuery : IRequest<(IEnumerable<PostDto>, PagedList<Post>)>
   {
     public GetAllPostParameters? Parameters { get; set; }
   }
@@ -34,7 +36,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts
     {
       var pagedPosts = GetPosts(request.Parameters);
 
-      if (pagedPosts == null || pagedPosts.Count == 0) throw new Exception("Posts not found");
+      if (pagedPosts == null || pagedPosts.Count == 0) throw new ApiException("Posts not foundt", (int)HttpStatusCode.NotFound);
 
       var postsDto = _mapper.Map<IEnumerable<PostDto>>(pagedPosts);
 

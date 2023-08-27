@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using SocialMedia.Core.Aplication.DTOs.Account;
+using SocialMedia.Core.Aplication.Wrappers;
 using SocialMedia.Core.Domain.Settings;
 using SocialMedia.Core.Interfaces.Services;
 using SocialMedia.Infrastructure.Data;
@@ -19,23 +19,12 @@ namespace SocialMedia.Infrastructure
   //Extension method - decorator
   public static class ServiceRegistration
   {
-    public static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddIdentityInfrastructureForApi(this IServiceCollection services, IConfiguration config)
     {
       #region Contexts
-      if (config.GetValue<bool>("UseInMemoryDatabase"))
-      {
-        services.AddDbContext<IdentityContext>(opt => opt.UseInMemoryDatabase("IdentityDb"));
-      }
-      else
-      {
-        services.AddDbContext<IdentityContext>(opt =>
-        {
-          opt.EnableSensitiveDataLogging();
-          opt.UseSqlServer(config.GetConnectionString("SocialMediaSomee"),
-          m => m.MigrationsAssembly(typeof(IdentityContext).Assembly.FullName));
-        });
 
-      }
+      AddContextConfiguration(services, config);
+
       #endregion
 
       #region Identity & JWT
@@ -80,27 +69,54 @@ namespace SocialMedia.Infrastructure
             c.HandleResponse();
             c.Response.StatusCode = 401;
             c.Response.ContentType = "application/json";
-            var result = JsonConvert.SerializeObject(new JwtResponse { HasError = true, Error = "You are not Authorized" });
+            var result = JsonConvert.SerializeObject(new Response<string>("You are not Authorized"));
             return c.Response.WriteAsync(result);
           },
           OnForbidden = c => // token valido pero no tiene permisos a la ruta
           {
             c.Response.StatusCode = 403;
             c.Response.ContentType = "application/json";
-            var result = JsonConvert.SerializeObject(new JwtResponse { HasError = true, Error = "You are not Authorized to access this resource" });
+            var result = JsonConvert.SerializeObject(new Response<string>("You are not Authorized to access this resource"));
             return c.Response.WriteAsync(result);
           }
-
         };
-
       });
 
       #endregion
 
       #region Services
-      services.AddTransient<IAccountService, AccountService>();
+
+      AddServicesConfiguration(services);
+
       #endregion
+
       return services;
     }
+
+    #region Private methods
+
+    private static void AddContextConfiguration(this IServiceCollection services, IConfiguration config)
+    {
+      if (config.GetValue<bool>("UseInMemoryDatabase"))
+      {
+        services.AddDbContext<IdentityContext>(opt => opt.UseInMemoryDatabase("IdentityDb"));
+      }
+      else
+      {
+        services.AddDbContext<IdentityContext>(opt =>
+        {
+          opt.EnableSensitiveDataLogging();
+          opt.UseSqlServer(config.GetConnectionString("SocialMediaSomee"),
+          m => m.MigrationsAssembly(typeof(IdentityContext).Assembly.FullName));
+        });
+      }
+    }
+
+    private static void AddServicesConfiguration(this IServiceCollection services)
+    {
+      services.AddTransient<IAccountService, AccountService>();
+    }
+
+    #endregion
   }
 }

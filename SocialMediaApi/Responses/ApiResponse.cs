@@ -1,8 +1,8 @@
-﻿using SocialMedia.Core.Aplication.CustomEntities;
+﻿using SocialMedia.Core.Aplication.DTOs.CustomEntities;
 
 namespace SocialMediaApi.Responses
 {
-  public class ApiResponse<T>
+    public class ApiResponse<T>
   {
     public ApiResponse(T data)
     {

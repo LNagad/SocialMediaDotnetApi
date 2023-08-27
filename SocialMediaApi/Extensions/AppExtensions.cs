@@ -1,10 +1,11 @@
-﻿using Swashbuckle.AspNetCore.SwaggerUI;
+﻿using SocialMediaApi.Middlewares;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace SocialMediaApi.Extensions
 {
   public static class AppExtensions
   {
-    public static IApplicationBuilder UseSwaggerExtension(this IApplicationBuilder app)
+    public static void UseSwaggerExtension(this IApplicationBuilder app)
     {
       app.UseSwagger();
       app.UseSwaggerUI(options =>
@@ -14,7 +15,12 @@ namespace SocialMediaApi.Extensions
         options.DefaultModelRendering(ModelRendering.Model);
       });
 
-      return app;
+    }
+
+    public static void UseErrorHandlerMiddleware(this IApplicationBuilder app)
+    {
+      app.UseMiddleware<ErrorHandleMiddleware>();
+
     }
   }
 }
