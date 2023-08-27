@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using SocialMedia.Core;
 using SocialMedia.Infrastructure;
 using SocialMedia.Infrastructure.Identity.Entities;
@@ -10,10 +11,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services
-  .AddControllers(opt => opt.Filters.Add<GlobalExceptionFilter>());
-  //ignore null
-  //.AddNewtonsoftJson(opt => opt.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore);
+builder.Services.AddControllers(opt =>
+{
+  opt.Filters.Add<GlobalExceptionFilter>();
+  opt.Filters.Add(new ProducesAttribute("application/json"));
+}).ConfigureApiBehaviorOptions(opt =>
+{
+  // not assume any sources for parameters // use the documentation speficied for us
+  opt.SuppressInferBindingSourcesForParameters = true; 
+  // supress automatic error response
+  opt.SuppressMapClientErrors = true;
+});
+//ignore null
+//.AddNewtonsoftJson(opt => opt.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore);
 
 builder.Services.AddEndpointsApiExplorer();
 

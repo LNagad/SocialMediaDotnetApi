@@ -26,6 +26,7 @@ namespace SocialMediaApi.Extensions
           }
         });
 
+        options.EnableAnnotations();
         options.DescribeAllParametersInCamelCase();
         // to add jwt bearer token in swagger
         options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

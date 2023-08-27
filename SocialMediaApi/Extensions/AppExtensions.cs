@@ -1,4 +1,6 @@
-﻿namespace SocialMediaApi.Extensions
+﻿using Swashbuckle.AspNetCore.SwaggerUI;
+
+namespace SocialMediaApi.Extensions
 {
   public static class AppExtensions
   {
@@ -9,6 +11,7 @@
       {
         options.SwaggerEndpoint("../swagger/v1/swagger.json", "Social Media API v1");
         options.RoutePrefix = "swagger";
+        options.DefaultModelRendering(ModelRendering.Model);
       });
 
       return app;

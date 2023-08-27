@@ -9,6 +9,9 @@ using SocialMedia.Core.Interfaces;
 
 namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts
 {
+  /// <summary>
+  /// Paraments to filter the posts
+  /// </summary>
   public class GetAllPostsQuery : IRequest<(IEnumerable<PostDto>, PagedList<Post>)>
   {
     public GetAllPostParameters? Parameters { get; set; }

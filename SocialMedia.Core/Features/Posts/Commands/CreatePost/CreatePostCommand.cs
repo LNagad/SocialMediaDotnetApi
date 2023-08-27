@@ -9,9 +9,12 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost
 {
   public class CreatePostCommand : IRequest<PostDto>
   {
-    public int PostId { get; set; }
+
     public int UserId { get; set; }
     public DateTime? Date { get; set; }
+    /// <example>
+    /// Hello world
+    /// </example>
     public string Description { get; set; }
     public string Image { get; set; }
   }

@@ -16,13 +16,14 @@ using SocialMedia.Core.Validators;
 using SocialMedia.Infrastructure.Services.Interfaces;
 using SocialMediaApi.Responses;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Net.Mime;
 
 namespace SocialMediaApi.Controllers.v1
 {
-
   [ApiVersion("1.0")]
   [Authorize(Roles = nameof(Roles.Admin) )]
 
+  [SwaggerTag("Posts Maintenance")]
   public class PostController : BaseApiController
   {
     private readonly IUriService _uriService;
@@ -33,12 +34,12 @@ namespace SocialMediaApi.Controllers.v1
     }
 
     [HttpGet(Name = nameof(GetPosts))]
-    [SwaggerOperation(Summary = "Public: Get all pagedPost")]
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<PostDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [SwaggerOperation(
+      Summary = "Posts list",
+      Description = "Get all posts paginated and with query filters"
+    )]
     public async Task<IActionResult> GetPosts([FromQuery] GetAllPostParameters filters)
     {
       var postTuple = await Mediator.Send(new GetAllPostsQuery() { Parameters = filters });
@@ -63,19 +64,26 @@ namespace SocialMediaApi.Controllers.v1
     }
 
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(ApiResponse<PostDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PostDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [SwaggerOperation(
+      Summary = "Post by id",
+      Description = "Get a post filtering by the post id"
+    )]
     public async Task<IActionResult> GetPost(int id)
     {
       return Ok(await Mediator.Send(new GetPostByIdQuery() { Id = id }));
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(ApiResponse<PostDto>), StatusCodes.Status204NoContent)]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Post(CreatePostCommand command)
+    [SwaggerOperation(
+      Summary = "Post creating",
+      Description = "Retrieve the necessary params to create a new post"
+    )]
+    public async Task<IActionResult> Post([FromBody] CreatePostCommand command)
     {
       //var result = await _validator.ValidateAsync(command);
 
@@ -90,11 +98,15 @@ namespace SocialMediaApi.Controllers.v1
     }
 
     [HttpPut("{id}")]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Put(int id, UpdatePostCommand command)
+    [SwaggerOperation(
+      Summary = "Post updating",
+      Description = "Retrieve the necessary params to modify an existing post"
+    )]
+    public async Task<IActionResult> Put(int id, [FromBody] UpdatePostCommand command)
     {
       //var result = await _validator.ValidateAsync(command);
 
@@ -112,15 +124,19 @@ namespace SocialMediaApi.Controllers.v1
     }
 
     [HttpDelete("{id}")]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [SwaggerOperation(
+      Summary = "Post deleting",
+      Description = "Retrieve the necessary params to delete an existing post"
+    )]
     public async Task<IActionResult> Delete(int id)
     {
       await Mediator.Send(new DeletePostByIdCommand() { Id = id });
       return NoContent();
     }
 
+    #region Private Methods
     private Metadata CreateMetadata(PagedList<Post> pagedPost, PostQueryFilter postQueryFilter)
     {
       var apiEndpoinRoute = Url.RouteUrl(nameof(GetPosts));
@@ -139,6 +155,6 @@ namespace SocialMediaApi.Controllers.v1
         PreviousPageUrl = prevUri
       };
     }
-
+    #endregion
   }
 }
