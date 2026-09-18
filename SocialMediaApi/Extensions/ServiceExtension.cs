@@ -64,7 +64,7 @@ namespace SocialMediaApi.Extensions
     {
       services.AddApiVersioning(options =>
       {
-        options.DefaultApiVersion = new ApiVersion(1, 0);
+        options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
         options.AssumeDefaultVersionWhenUnspecified = true;
         options.ReportApiVersions = true;
       });

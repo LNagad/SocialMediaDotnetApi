@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SocialMedia.Core;
 using SocialMedia.Infrastructure;
+using SocialMedia.Infrastructure.Data;
 using SocialMedia.Infrastructure.Identity.Entities;
 using SocialMedia.Infrastructure.Identity.Seeds;
 using SocialMediaApi.Extensions;
@@ -31,7 +33,13 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddApplicationLayer();
 builder.Services.AddPersistenceInfrastructure(builder.Configuration);
-builder.Services.AddIdentityInfrastructureForApi(builder.Configuration);
+Console.WriteLine($"[DEBUG] Environment: {builder.Environment.EnvironmentName}");
+Console.WriteLine($"[DEBUG] SecretKey existe: {!string.IsNullOrEmpty(builder.Configuration["Authentication:SecretKey"])}");
+Console.WriteLine($"[DEBUG] SecretKey length: {builder.Configuration["Authentication:SecretKey"]?.Length ?? 0}");
+
+builder.Services.AddIdentityInfrastructureForApi(builder.Configuration, builder.Environment);
+Console.WriteLine($"[DEBUG] Environment: {builder.Environment.EnvironmentName}");
+Console.WriteLine($"[DEBUG] SecretKey cargada: {!string.IsNullOrEmpty(builder.Configuration["Authentication:SecretKey"])}");
 builder.Services.AddServicesInfrastructure();
 
 builder.Services.AddSwaggerExtension();
@@ -46,6 +54,8 @@ using (var scope = app.Services.CreateScope())
 
   try
   {
+    services.GetRequiredService<SocialMediaYTContext>().Database.Migrate();
+
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 

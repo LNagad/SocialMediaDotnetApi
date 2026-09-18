@@ -4,7 +4,6 @@ using SocialMedia.Core.Aplication.Exceptions;
 using SocialMedia.Core.Aplication.Wrappers;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;
-using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
 using System.Net;
 

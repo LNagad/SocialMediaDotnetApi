@@ -362,4 +362,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/SocialMediaApi/appsettings.json
+
+# Environment-specific settings with secrets (base appsettings.json stays committed)
+SocialMediaApi/appsettings.Production.json
+SocialMediaApi/appsettings.Staging.json

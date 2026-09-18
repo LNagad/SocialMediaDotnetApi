@@ -18,7 +18,7 @@ namespace SocialMedia.Core
     {
 
       services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
-      services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+      services.AddAutoMapper(cfg => cfg.AddMaps(Assembly.GetExecutingAssembly()));
       services.AddValidatorsFromAssemblyContaining<PostValidator>();
 
       #region Services

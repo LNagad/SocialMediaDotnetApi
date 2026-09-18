@@ -1,7 +1,6 @@
 ﻿using SocialMedia.Core.Aplication.DTOs.Account;
 using SocialMedia.Core.Aplication.Exceptions;
 using SocialMedia.Core.Aplication.Interfaces.Services;
-using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Core.Interfaces.Services;
 

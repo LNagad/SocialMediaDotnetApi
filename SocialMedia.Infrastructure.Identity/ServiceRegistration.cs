@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using SocialMedia.Core.Aplication.Wrappers;
@@ -19,7 +20,7 @@ namespace SocialMedia.Infrastructure
   //Extension method - decorator
   public static class ServiceRegistration
   {
-    public static IServiceCollection AddIdentityInfrastructureForApi(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddIdentityInfrastructureForApi(this IServiceCollection services, IConfiguration config, IHostEnvironment env)
     {
       #region Contexts
 
@@ -33,6 +34,35 @@ namespace SocialMedia.Infrastructure
         .AddEntityFrameworkStores<IdentityContext>()
         .AddDefaultTokenProviders();
 
+      var jwtSettings = config.GetSection("Authentication").Get<JWTSettings>()
+        ?? throw new InvalidOperationException(
+          "Falta la sección 'Authentication' en la configuración. " +
+          "En desarrollo configúrala con 'dotnet user-secrets' y en producción con variables de entorno.");
+
+      if (string.IsNullOrWhiteSpace(jwtSettings.SecretKey))
+      {
+        throw new InvalidOperationException(
+          "Falta la configuración 'Authentication:SecretKey'. " +
+          "En desarrollo: dotnet user-secrets set \"Authentication:SecretKey\" \"<clave>\" --project SocialMediaApi. " +
+          "En producción: define la variable de entorno Authentication__SecretKey.");
+      }
+
+      if (jwtSettings.SecretKey.Length < 32)
+      {
+        throw new InvalidOperationException(
+          "'Authentication:SecretKey' debe tener al menos 32 caracteres para HMAC-SHA256.");
+      }
+
+      if (string.IsNullOrWhiteSpace(jwtSettings.Issuer))
+      {
+        throw new InvalidOperationException("Falta la configuración 'Authentication:Issuer'.");
+      }
+
+      if (string.IsNullOrWhiteSpace(jwtSettings.Audience))
+      {
+        throw new InvalidOperationException("Falta la configuración 'Authentication:Audience'.");
+      }
+
       services.Configure<JWTSettings>(config.GetSection("Authentication"));
 
       services.AddAuthentication(opt =>
@@ -41,7 +71,7 @@ namespace SocialMedia.Infrastructure
         opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
       }).AddJwtBearer(opt =>
       {
-        opt.RequireHttpsMetadata = true; // false in development
+        opt.RequireHttpsMetadata = !env.IsDevelopment();
         opt.SaveToken = false;
         opt.TokenValidationParameters = new TokenValidationParameters()
         {
@@ -50,9 +80,9 @@ namespace SocialMedia.Infrastructure
           ValidateAudience = true,
           ValidateLifetime = true, //si es valido
           ClockSkew = System.TimeSpan.Zero, // si ya expiro, no hay tiempo de gracia
-          ValidIssuer = config["Authentication:Issuer"],
-          ValidAudience = config["Authentication:Audience"],
-          IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(config["Authentication:SecretKey"]))
+          ValidIssuer = jwtSettings.Issuer,
+          ValidAudience = jwtSettings.Audience,
+          IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
         };
 
         opt.Events = new JwtBearerEvents()
