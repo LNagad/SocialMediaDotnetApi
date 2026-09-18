@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ using System.Net.Mime;
 
 namespace SocialMediaApi.Controllers.v1
 {
-    [ApiVersion("1.0")]
+  [ApiVersion("1.0")]
   [Authorize(Roles = nameof(Roles.Admin) )]
 
   [SwaggerTag("Posts Maintenance")]

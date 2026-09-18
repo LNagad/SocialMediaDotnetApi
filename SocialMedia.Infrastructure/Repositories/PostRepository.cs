@@ -9,9 +9,9 @@ namespace SocialMedia.Infrastructure.Repositories
   {
     public PostRepository(SocialMediaYTContext context) : base(context) { }
 
-    public async Task<IEnumerable<Post>> GetPostsByUser(int userId)
+    public async Task<IEnumerable<Post>> GetPostsByUser(int userId, CancellationToken cancellationToken = default)
     {
-      return await _entities.Where(x => x.UserId == userId).ToListAsync();
+      return await _entities.Where(x => x.UserId == userId).ToListAsync(cancellationToken);
     }
 
     // seems to be slower than GetAll
@@ -23,14 +23,9 @@ namespace SocialMedia.Infrastructure.Repositories
       }
     }
 
-    public async Task<IAsyncEnumerable<Post>> GetAllAsyncEnumerableTask()
+    public async Task<List<Post>> GetAllAsyncList(CancellationToken cancellationToken = default)
     {
-      return _entities.AsAsyncEnumerable();
-    }
-
-    public async Task<List<Post>> GetAllAsyncList()
-    {
-      return await _entities.AsNoTracking().ToListAsync();
+      return await _entities.AsNoTracking().ToListAsync(cancellationToken);
     }
   }
 }

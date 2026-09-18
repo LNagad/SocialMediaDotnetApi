@@ -11,10 +11,10 @@ using System.Net;
 
 namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts
 {
-    /// <summary>
-    /// Paraments to filter the posts
-    /// </summary>
-    public class GetAllPostsQuery : IRequest<(IEnumerable<PostDto>, PagedList<Post>)>
+  /// <summary>
+  /// Paraments to filter the posts
+  /// </summary>
+  public class GetAllPostsQuery : IRequest<(IEnumerable<PostDto>, PagedList<Post>)>
   {
     public GetAllPostParameters? Parameters { get; set; }
   }
@@ -34,9 +34,16 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts
 
     public async Task<(IEnumerable<PostDto>, PagedList<Post>)> Handle(GetAllPostsQuery request, CancellationToken cancellationToken)
     {
-      var pagedPosts = GetPosts(request.Parameters);
+      var pagedPosts = await GetPostsAsync(request.Parameters, cancellationToken);
 
-      if (pagedPosts == null || pagedPosts.Count == 0) throw new ApiException("Posts not foundt", (int)HttpStatusCode.NotFound);
+      var hasFilters = request.Parameters.UserId != null
+        || request.Parameters.Date != null
+        || request.Parameters.Description != null;
+
+      if (hasFilters && pagedPosts.Count == 0)
+      {
+        throw new ApiException("No posts found with the specified filters", (int)HttpStatusCode.NotFound);
+      }
 
       var postsDto = _mapper.Map<IEnumerable<PostDto>>(pagedPosts);
 
@@ -45,7 +52,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts
 
     #region private methods
 
-    private PagedList<Post> GetPosts(GetAllPostParameters parameters)
+    private async Task<PagedList<Post>> GetPostsAsync(GetAllPostParameters parameters, CancellationToken cancellationToken = default)
     {
       parameters.PageNumber = parameters.PageNumber == 0 ? _paginationSettings.DefaultPageNumber : parameters.PageNumber;
       parameters.PageSize = parameters.PageSize == 0 ? _paginationSettings.DefaultPageSize : parameters.PageSize;
@@ -59,8 +66,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts
 
       if (parameters.Date != null)
       {
-        //datetime usa horay minutos, por lo que si se quiere filtrar por fecha, se debe usar ToShortDateString()
-        posts = posts.Where(x => x.Date.ToShortDateString() == parameters.Date?.ToShortDateString());
+        posts = posts.Where(x => x.Date.Date == parameters.Date.Value.Date);
       }
 
       if (parameters.Description != null)
@@ -68,7 +74,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts
         posts = posts.Where(x => x.Description.ToLower().Contains(parameters.Description.ToLower()));
       }
 
-      var pagedPosts = PagedList<Post>.Create(posts, parameters.PageNumber, parameters.PageSize);
+      var pagedPosts = await PagedList<Post>.CreateAsync(posts, parameters.PageNumber, parameters.PageSize, cancellationToken);
 
       return pagedPosts;
     }

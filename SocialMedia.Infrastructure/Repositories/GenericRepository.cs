@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SocialMedia.Core.Aplication.Exceptions;
 using SocialMedia.Core.Domain.Common;
-using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Infrastructure.Data;
 
@@ -19,17 +18,17 @@ namespace SocialMedia.Infrastructure.Repositories
       _entities = _dbContext.Set<Entity>();
     }
 
-    public virtual IEnumerable<Entity> GetAll()
+    public virtual IQueryable<Entity> GetAll()
     {
-      return _entities.AsNoTracking().AsEnumerable(); //Deferred execution
+      return _entities.AsNoTracking();
     }
 
-    public virtual async Task<List<Entity>> GetAllAsync()
+    public virtual async Task<List<Entity>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-      return await _entities.ToListAsync(); //No Deferred execution
+      return await _entities.AsNoTracking().ToListAsync(cancellationToken); //No Deferred execution
     }
 
-    public virtual async Task<List<Entity>> GetAllWithIncludeAsync(List<string> properties)
+    public virtual async Task<List<Entity>> GetAllWithIncludeAsync(List<string> properties, CancellationToken cancellationToken = default)
     {
       var query = _entities.AsQueryable();
 
@@ -38,12 +37,12 @@ namespace SocialMedia.Infrastructure.Repositories
         query = query.Include(property);
       }
 
-      var result = await query.ToListAsync();
+      var result = await query.ToListAsync(cancellationToken);
 
       return result;
     }
 
-    public virtual async Task<Entity> GetByIdWithIncludeAsync(int id, List<string> properties)
+    public virtual async Task<Entity> GetByIdWithIncludeAsync(int id, List<string> properties, CancellationToken cancellationToken = default)
     {
       var query = _entities.AsQueryable();
 
@@ -52,19 +51,19 @@ namespace SocialMedia.Infrastructure.Repositories
         query = query.Include(property);
       }
 
-      var result = await query.FirstOrDefaultAsync(p => p.Id == id);
+      var result = await query.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
       return result;
     }
 
-    public virtual async Task<Entity?> GetByIdAsync(int id)
+    public virtual async Task<Entity?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-      return await _entities.FindAsync(id);
+      return await _entities.FindAsync(new object[] { id }, cancellationToken);
     }
 
-    public virtual async Task AddAsync(Entity entity)
+    public virtual async Task AddAsync(Entity entity, CancellationToken cancellationToken = default)
     {
-      await _entities.AddAsync(entity);
+      await _entities.AddAsync(entity, cancellationToken);
     }
 
     public virtual Entity Update(Entity entity)
@@ -79,9 +78,9 @@ namespace SocialMedia.Infrastructure.Repositories
       _dbContext.Set<Entity>().Remove(entity);
     }
 
-    public virtual async Task<Entity> FindAndUpdateAsync(Entity entity, int id)
+    public virtual async Task<Entity> FindAndUpdateAsync(Entity entity, int id, CancellationToken cancellationToken = default)
     {
-      var entry = await GetByIdAsync(id);
+      var entry = await GetByIdAsync(id, cancellationToken);
 
       if (entry == null) throw new ApiException("Something went wrong when updating", 500);
 
@@ -90,9 +89,9 @@ namespace SocialMedia.Infrastructure.Repositories
       return entry;
     }
 
-    public virtual async Task FindAndDeleteAsync(int id)
+    public virtual async Task FindAndDeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-      var entity = await GetByIdAsync(id);
+      var entity = await GetByIdAsync(id, cancellationToken);
 
       if (entity == null) throw new ApiException("Something went wrong when deleting", 500);
       _entities.Remove(entity);

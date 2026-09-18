@@ -34,7 +34,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.UpdatePostById
     {
       var entity = _mapper.Map<Post>(command);
 
-      var postUpdated = await UpdatePost(entity, command.PostId);
+      var postUpdated = await UpdatePost(entity, command.PostId, cancellationToken);
       
       var response = new PostUpdateResponse()
       {
@@ -49,9 +49,9 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.UpdatePostById
       return new Response<PostUpdateResponse>() { Data = response };
     }
 
-    private async Task<PostDto> UpdatePost(Post post, int id)
+    private async Task<PostDto> UpdatePost(Post post, int id, CancellationToken cancellationToken = default)
     {
-      var existingPost = await _unitOfWork.PostRepository.GetByIdAsync(id);
+      var existingPost = await _unitOfWork.PostRepository.GetByIdAsync(id, cancellationToken);
 
       if (existingPost == null) throw new ApiException("Post doesn't exist", (int)HttpStatusCode.NotFound);
 
@@ -60,7 +60,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.UpdatePostById
 
       var postUpdated = _unitOfWork.PostRepository.Update(existingPost);
 
-      await _unitOfWork.SaveChangesAsync();
+      await _unitOfWork.SaveChangesAsync(cancellationToken);
 
       var postUpdatedMaped = _mapper.Map<PostDto>(postUpdated);
 

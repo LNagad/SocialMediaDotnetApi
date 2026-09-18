@@ -4,6 +4,6 @@ namespace SocialMedia.Core.Interfaces
 {
   public interface ISecurityRepository : IGenericRepository<Security>
   {
-    Task<Security> GetUser(UserLogin login);
+    Task<Security> GetUser(UserLogin login, CancellationToken cancellationToken = default);
   }
 }

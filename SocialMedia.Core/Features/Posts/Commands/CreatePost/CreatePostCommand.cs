@@ -4,7 +4,6 @@ using SocialMedia.Core.Aplication.Exceptions;
 using SocialMedia.Core.Aplication.Wrappers;
 using SocialMedia.Core.Domain.Entities;
 using SocialMedia.Core.DTOs;
-using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
 using System.Net;
 
@@ -43,16 +42,16 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost
         Image = command.Image
       };
 
-      var post = await InsertPost(postDto);
+      var post = await InsertPost(postDto, cancellationToken);
       Response<PostDto> response = new() { Data = post };
       return response;
     }
 
-    private async Task<PostDto> InsertPost(PostDto postDto)
+    private async Task<PostDto> InsertPost(PostDto postDto, CancellationToken cancellationToken = default)
     {
       var post = _mapper.Map<Post>(postDto);
 
-      var user = await _unitOfWork.UserRepository.GetByIdAsync(post.UserId);
+      var user = await _unitOfWork.UserRepository.GetByIdAsync(post.UserId, cancellationToken);
 
       if (user == null)
       {
@@ -64,7 +63,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost
         throw new ApiException("Content not allowed", (int)HttpStatusCode.BadRequest);
       }
 
-      var userPosts = await _unitOfWork.PostRepository.GetPostsByUser(post.UserId);
+      var userPosts = await _unitOfWork.PostRepository.GetPostsByUser(post.UserId, cancellationToken);
 
       if (userPosts.Count() < 10)
       {
@@ -77,8 +76,8 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.CreatePost
         }
       }
 
-      await _unitOfWork.PostRepository.AddAsync(post);
-      await _unitOfWork.SaveChangesAsync();
+      await _unitOfWork.PostRepository.AddAsync(post, cancellationToken);
+      await _unitOfWork.SaveChangesAsync(cancellationToken);
 
       postDto = _mapper.Map<PostDto>(post);
       return postDto;

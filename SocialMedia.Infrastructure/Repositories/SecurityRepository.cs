@@ -10,9 +10,9 @@ namespace SocialMedia.Infrastructure.Persistence.Repositories
   {
     public SecurityRepository(SocialMediaYTContext context) : base(context) { }
 
-    public async Task<Security> GetUser(UserLogin login)
+    public async Task<Security> GetUser(UserLogin login, CancellationToken cancellationToken = default)
     {
-      return await _entities.FirstOrDefaultAsync(x => x.User == login.User);
+      return await _entities.FirstOrDefaultAsync(x => x.User == login.User, cancellationToken);
     }
 
   }
