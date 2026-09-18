@@ -25,15 +25,15 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetPostById
 
     public async Task<Response<PostDto>> Handle(GetPostByIdQuery request, CancellationToken cancellationToken)
     {
-      var postDto = await GetPostByIdAsync(request.Id);
+      var postDto = await GetPostByIdAsync(request.Id, cancellationToken);
 
 
       return new Response<PostDto>() { Data = postDto };
     }
 
-    private async Task<PostDto> GetPostByIdAsync(int id)
+    private async Task<PostDto> GetPostByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-      var post = await _postRepository.GetByIdAsync(id);
+      var post = await _postRepository.GetByIdAsync(id, cancellationToken);
 
       if (post == null) throw new ApiException("Post not foundt", (int)HttpStatusCode.NotFound);
 

@@ -25,9 +25,9 @@ namespace SocialMedia.Infrastructure.Repositories
     public ISecurityRepository SecurityRepository => _securityRepository ??= new SecurityRepository(_context);
     public IGenericRepository<Comment> CommentRepository => _commentRepository ??= new GenericRepository<Comment>(_context);
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-      await _context.SaveChangesAsync();
+      await _context.SaveChangesAsync(cancellationToken);
     }
   }
 }

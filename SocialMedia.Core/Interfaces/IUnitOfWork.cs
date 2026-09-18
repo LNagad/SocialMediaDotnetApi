@@ -7,6 +7,6 @@ namespace SocialMedia.Core.Interfaces
     IUserRepository UserRepository { get; }
     ISecurityRepository SecurityRepository { get; }
     IGenericRepository<Comment> CommentRepository { get; }
-    Task SaveChangesAsync();
+    Task SaveChangesAsync(CancellationToken cancellationToken = default);
   }
 }

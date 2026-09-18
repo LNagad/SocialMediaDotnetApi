@@ -4,9 +4,8 @@ namespace SocialMedia.Core.Interfaces
 {
   public interface IPostRepository : IGenericRepository<Post>
   {
-    Task<IEnumerable<Post>> GetPostsByUser(int userId);
+    Task<IEnumerable<Post>> GetPostsByUser(int userId, CancellationToken cancellationToken = default);
     IAsyncEnumerable<Post> GetAllAsyncEnumerable();
-    Task<IAsyncEnumerable<Post>> GetAllAsyncEnumerableTask();
-    Task<List<Post>> GetAllAsyncList();
+    Task<List<Post>> GetAllAsyncList(CancellationToken cancellationToken = default);
   }
 }

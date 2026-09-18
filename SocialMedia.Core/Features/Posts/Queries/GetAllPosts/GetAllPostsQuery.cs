@@ -34,7 +34,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts
 
     public async Task<(IEnumerable<PostDto>, PagedList<Post>)> Handle(GetAllPostsQuery request, CancellationToken cancellationToken)
     {
-      var pagedPosts = await GetPostsAsync(request.Parameters);
+      var pagedPosts = await GetPostsAsync(request.Parameters, cancellationToken);
 
       var hasFilters = request.Parameters.UserId != null
         || request.Parameters.Date != null
@@ -52,7 +52,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts
 
     #region private methods
 
-    private async Task<PagedList<Post>> GetPostsAsync(GetAllPostParameters parameters)
+    private async Task<PagedList<Post>> GetPostsAsync(GetAllPostParameters parameters, CancellationToken cancellationToken = default)
     {
       parameters.PageNumber = parameters.PageNumber == 0 ? _paginationSettings.DefaultPageNumber : parameters.PageNumber;
       parameters.PageSize = parameters.PageSize == 0 ? _paginationSettings.DefaultPageSize : parameters.PageSize;
@@ -74,7 +74,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Queries.GetAllPosts
         posts = posts.Where(x => x.Description.ToLower().Contains(parameters.Description.ToLower()));
       }
 
-      var pagedPosts = await PagedList<Post>.CreateAsync(posts, parameters.PageNumber, parameters.PageSize);
+      var pagedPosts = await PagedList<Post>.CreateAsync(posts, parameters.PageNumber, parameters.PageSize, cancellationToken);
 
       return pagedPosts;
     }

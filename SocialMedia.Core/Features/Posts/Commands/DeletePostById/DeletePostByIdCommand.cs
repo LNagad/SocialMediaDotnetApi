@@ -24,7 +24,7 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.DeletePostById
 
     public async Task<Response<PostDto>> Handle(DeletePostByIdCommand request, CancellationToken cancellationToken)
     {
-      var postId = await DeletePost(request.Id);
+      var postId = await DeletePost(request.Id, cancellationToken);
       var postDto = new PostDto
       {
         PostId = postId
@@ -32,15 +32,15 @@ namespace SocialMedia.Core.Aplication.Features.Posts.Commands.DeletePostById
       return new Response<PostDto>(){ Data = postDto };
     }
 
-    private async Task<int> DeletePost(int id)
+    private async Task<int> DeletePost(int id, CancellationToken cancellationToken = default)
     {
-      var existingPost = await _unitOfWork.PostRepository.GetByIdAsync(id);
+      var existingPost = await _unitOfWork.PostRepository.GetByIdAsync(id, cancellationToken);
 
       if (existingPost == null) throw new ApiException("Post doesn't exist", (int)HttpStatusCode.NotFound);
-       
+
       _unitOfWork.PostRepository.Delete(existingPost);
 
-      await _unitOfWork.SaveChangesAsync();
+      await _unitOfWork.SaveChangesAsync(cancellationToken);
 
       return existingPost.Id;
     }
