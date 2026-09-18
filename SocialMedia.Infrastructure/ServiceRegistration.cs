@@ -16,10 +16,10 @@ namespace SocialMedia.Infrastructure
       services.Configure<PaginationSettings>(config.GetSection("PaginationOptions"));
       services.Configure<PasswordSettings>(config.GetSection("PasswordOptions"));
 
-      services.AddTransient<IPostRepository, PostRepository>();
-      services.AddTransient<IUserRepository, UserRepository>();
-      services.AddTransient<ISecurityRepository, SecurityRepository>();
-      services.AddTransient<IUnitOfWork, UnitOfWork>();
+      services.AddScoped<IPostRepository, PostRepository>();
+      services.AddScoped<IUserRepository, UserRepository>();
+      services.AddScoped<ISecurityRepository, SecurityRepository>();
+      services.AddScoped<IUnitOfWork, UnitOfWork>();
       services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
       services.AddDbContext<SocialMediaYTContext>(options =>
