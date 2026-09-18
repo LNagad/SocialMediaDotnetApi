@@ -39,7 +39,7 @@ namespace SocialMedia.Core.Services
       if (filters.Date != null)
       {
         //datetime usa horay minutos, por lo que si se quiere filtrar por fecha, se debe usar ToShortDateString()
-        posts = posts.Where(x => x.Date.ToShortDateString() == filters.Date?.ToShortDateString());
+        posts = posts.Where(x => x.Date.ToShortDateString() == filters.Date.Value.ToShortDateString());
       }
 
       if (filters.Description != null)

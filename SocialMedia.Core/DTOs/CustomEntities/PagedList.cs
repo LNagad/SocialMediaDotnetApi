@@ -1,4 +1,6 @@
-﻿namespace SocialMedia.Core.Aplication.DTOs.CustomEntities
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace SocialMedia.Core.Aplication.DTOs.CustomEntities
 {
     public class PagedList<T> : List<T>
     {
@@ -27,6 +29,14 @@
             var count = source.Count();
             // Pagination
             var items = source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+            return new PagedList<T>(items, count, pageNumber, pageSize);
+        }
+
+        public static async Task<PagedList<T>> CreateAsync(IQueryable<T> source, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var count = await source.CountAsync(cancellationToken);
+            var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
             return new PagedList<T>(items, count, pageNumber, pageSize);
         }

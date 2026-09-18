@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SocialMedia.Core.Aplication.Exceptions;
 using SocialMedia.Core.Domain.Common;
-using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Infrastructure.Data;
 
@@ -19,9 +18,9 @@ namespace SocialMedia.Infrastructure.Repositories
       _entities = _dbContext.Set<Entity>();
     }
 
-    public virtual IEnumerable<Entity> GetAll()
+    public virtual IQueryable<Entity> GetAll()
     {
-      return _entities.AsNoTracking().AsEnumerable(); //Deferred execution
+      return _entities.AsNoTracking();
     }
 
     public virtual async Task<List<Entity>> GetAllAsync()
