@@ -54,7 +54,7 @@ using (var scope = app.Services.CreateScope())
 
   try
   {
-    services.GetRequiredService<SocialMediaYTContext>().Database.Migrate();
+    await services.GetRequiredService<SocialMediaYTContext>().Database.MigrateAsync();
 
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using SocialMedia.Core.Aplication.Enums;
 using SocialMedia.Infrastructure.Identity.Entities;
 
@@ -19,7 +20,7 @@ namespace SocialMedia.Infrastructure.Identity.Seeds
         PhoneNumberConfirmed = true,
       };
 
-      if (userManager.Users.All(user => user.Id != defaultUser.Id))
+      if (await userManager.Users.AllAsync(user => user.Id != defaultUser.Id))
       {
         var userExist = await userManager.FindByEmailAsync(defaultUser.Email);
         if (userExist == null)

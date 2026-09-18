@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using SocialMedia.Core.Aplication.Interfaces.Services;
 using SocialMedia.Core.Aplication.Services;
-using SocialMedia.Core.Services;
 using SocialMedia.Core.Validators;
 using System.Reflection;
 using System.Text;
@@ -22,7 +21,6 @@ namespace SocialMedia.Core
       services.AddValidatorsFromAssemblyContaining<PostValidator>();
 
       #region Services
-      services.AddTransient<IPostService, PostService>();
       services.AddTransient<ISecurityService, SecurityService>();
       #endregion
 

@@ -25,7 +25,7 @@ namespace SocialMedia.Infrastructure.Repositories
 
     public virtual async Task<List<Entity>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-      return await _entities.ToListAsync(cancellationToken); //No Deferred execution
+      return await _entities.AsNoTracking().ToListAsync(cancellationToken); //No Deferred execution
     }
 
     public virtual async Task<List<Entity>> GetAllWithIncludeAsync(List<string> properties, CancellationToken cancellationToken = default)
